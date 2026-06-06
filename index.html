@@ -344,7 +344,7 @@ function Matches(p){
   var _l=useState({}),local=_l[0],setLocal=_l[1];
   var _s=useState({}),saved=_s[0],setSaved=_s[1];
   var _g=useState("Todos"),grp=_g[0],setGrp=_g[1];
-  var groups=["Todos"].concat([...new Set(MATCHES.map(function(m){return m.group;}))]);
+  var groups=["Todos","Grupo A","Grupo B","Grupo C","Grupo D","Grupo E","Grupo F","Grupo G","Grupo H","Grupo I","Grupo J","Grupo K","Grupo L"];
   var filtered=grp==="Todos"?MATCHES:MATCHES.filter(function(m){return m.group===grp;});
 
   function save(mid){
@@ -467,7 +467,7 @@ function Admin(p){
   var _nn=useState(""),nn=_nn[0],setNn=_nn[1];
   var _nt=useState(""),nt=_nt[0],setNt=_nt[1];
 
-  var groups=["Todos"].concat([...new Set(MATCHES.map(function(m){return m.group;}))]);
+  var groups=["Todos","Grupo A","Grupo B","Grupo C","Grupo D","Grupo E","Grupo F","Grupo G","Grupo H","Grupo I","Grupo J","Grupo K","Grupo L"];
   var fm=grp==="Todos"?MATCHES:MATCHES.filter(function(m){return m.group===grp;});
   var BASE=window.location.href.split("?")[0];
 
