@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <title>Prode Mundial 2026</title>
+  <title>Prode Mundial 2026 - Mesa de Ayuda</title>
   <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#07090f}</style>
 </head>
 <body>
@@ -331,7 +331,7 @@ function Login(p){
 function Hdr(p){
   return React.createElement("div",{className:"hdr"},
     React.createElement("div",{className:"hdr-r"},
-      React.createElement("div",{className:"logo"},"PRODE⚽26"),
+      React.createElement("div",{className:"logo"},React.createElement("div",null,"PRODE⚽26"),React.createElement("div",{style:{fontSize:"11px",letterSpacing:"2px",color:"#fff",fontFamily:"'DM Sans',sans-serif",fontWeight:600,textTransform:"uppercase",marginTop:"-2px"}},"Mesa de Ayuda")),
       React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
         React.createElement("div",{className:"chip"},p.isAdmin?"🔧 ADMIN":p.user.name),
         React.createElement("button",{className:"out",onClick:p.onLogout},"salir")
