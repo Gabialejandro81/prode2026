@@ -314,10 +314,10 @@ function Login(p){
   function go(){if(!p.onLogin(tok.trim()))setErr("Token inválido. Pedíselo al admin.");}
   return React.createElement("div",{className:"login"},
     React.createElement("div",{className:"ll"},"PRODE⚽26"),
-    React.createElement("div",{className:"ls"},"Mundial USA · México · Canadá"),
+    React.createElement("div",{className:"ls"},"Mundial USA · México · Canadá"),React.createElement("div",{style:{fontSize:"12px",color:"var(--acc)",textTransform:"uppercase",letterSpacing:"2px",marginTop:"-24px",marginBottom:"10px",fontWeight:700}},"Mesa de Ayuda"),
     React.createElement("div",{className:"lcard"},
       React.createElement("div",{className:"llbl"},"Ingresá tu token"),
-      React.createElement("input",{className:"linp",placeholder:"ej: leo7x",value:tok,
+      React.createElement("input",{className:"linp",placeholder:"tu token aquí",value:tok,
         onChange:function(e){setTok(e.target.value);setErr("");},
         onKeyDown:function(e){if(e.key==="Enter")go();},
         autoCapitalize:"none",autoCorrect:"off"}),
