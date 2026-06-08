@@ -126,6 +126,9 @@ var MATCHES=[
 
 var ADMIN="admin2026";
 
+var FLAGS={"México":"🇲🇽","Sudáfrica":"🇿🇦","Corea del Sur":"🇰🇷","República Checa":"🇨🇿","Rep. Checa":"🇨🇿","Canadá":"🇨🇦","Bosnia y Herz.":"🇧🇦","Estados Unidos":"🇺🇸","Paraguay":"🇵🇾","Qatar":"🇶🇦","Suiza":"🇨🇭","Brasil":"🇧🇷","Marruecos":"🇲🇦","Haití":"🇭🇹","Escocia":"🏴","Australia":"🇦🇺","Turquía":"🇹🇷","Alemania":"🇩🇪","Curazao":"🇨🇼","Países Bajos":"🇳🇱","Japón":"🇯🇵","Costa de Marfil":"🇨🇮","Ecuador":"🇪🇨","Suecia":"🇸🇪","Túnez":"🇹🇳","España":"🇪🇸","Cabo Verde":"🇨🇻","Bélgica":"🇧🇪","Egipto":"🇪🇬","Arabia Saudita":"🇸🇦","Uruguay":"🇺🇾","Irán":"🇮🇷","Nueva Zelanda":"🇳🇿","Francia":"🇫🇷","Senegal":"🇸🇳","Irak":"🇮🇶","Noruega":"🇳🇴","Argentina":"🇦🇷","Argelia":"🇩🇿","Austria":"🇦🇹","Jordania":"🇯🇴","Portugal":"🇵🇹","RD Congo":"🇨🇩","Inglaterra":"🏴","Croacia":"🇭🇷","Ghana":"🇬🇭","Panamá":"🇵🇦","Uzbekistán":"🇺🇿","Colombia":"🇨🇴"};
+function flag(n){return FLAGS[n]||"⚽";}
+
 function pts(pred,res){
   if(!pred||!res) return 0;
   var ph=+pred.home,pa=+pred.away,rh=+res.home,ra=+res.away;
@@ -378,9 +381,9 @@ function Matches(p){
           React.createElement("span",{className:"mc-t"},fmt(m.kickoff))
         ),
         React.createElement("div",{className:"mc-te"},
-          React.createElement("span",{className:"tn"},m.home),
+          React.createElement("span",{className:"tn"},flag(m.home)+" "+m.home),
           React.createElement("span",{className:"vs"},"VS"),
-          React.createElement("span",{className:"tnr"},m.away)
+          React.createElement("span",{className:"tnr"},m.away+" "+flag(m.away))
         ),
         React.createElement("div",{className:"vn"},m.venue),
         React.createElement("div",null,
@@ -535,13 +538,13 @@ function Admin(p){
           React.createElement("div",{className:"at"},m.home+" vs "+m.away),
           React.createElement("div",{style:{fontSize:10,color:"var(--mut)",marginBottom:8}},m.group+" · "+fmt(m.kickoff)),
           React.createElement("div",{style:{display:"flex",alignItems:"center",gap:7}},
-            React.createElement("span",{style:{flex:1,fontSize:12,fontWeight:600}},m.home),
+            React.createElement("span",{style:{flex:1,fontSize:12,fontWeight:600}},flag(m.home)+" "+m.home),
             React.createElement("input",{className:"ri",type:"number",placeholder:"—",value:hv,
               onChange:function(e){setLr(function(l){return Object.assign({},l,{[m.id+"h"]:e.target.value.replace(/\D/,"").slice(0,2)});});}}),
             React.createElement("span",{style:{fontFamily:"'Bebas Neue',sans-serif",color:"var(--mut)"}},"—"),
             React.createElement("input",{className:"ri",type:"number",placeholder:"—",value:av,
               onChange:function(e){setLr(function(l){return Object.assign({},l,{[m.id+"a"]:e.target.value.replace(/\D/,"").slice(0,2)});});}}),
-            React.createElement("span",{style:{flex:1,fontSize:12,fontWeight:600,textAlign:"right"}},m.away)
+            React.createElement("span",{style:{flex:1,fontSize:12,fontWeight:600,textAlign:"right"}},m.away+" "+flag(m.away))
           ),
           React.createElement("button",{className:"cbtn",onClick:function(){saveRes(m.id);}},ex?"Actualizar":"Guardar resultado")
         );
