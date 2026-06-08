@@ -293,7 +293,7 @@ function App(){
       isAdmin
         ? React.createElement(Admin,{players:players,preds:preds,results:results,showToast:showToast})
         : React.createElement(React.Fragment,null,
-            tab==="matches"&&React.createElement(Matches,{preds:preds,results:results,user:user,showToast:showToast}),
+            tab==="matches"&&React.createElement(Matches,{preds:preds,results:results,user:user,players:players,showToast:showToast}),
             tab==="table"&&React.createElement(Table,{lb:lb(),user:user}),
             tab==="stats"&&React.createElement(Stats,{preds:preds,results:results,user:user}),
             React.createElement("nav",{className:"bnav"},
@@ -406,6 +406,23 @@ function Matches(p){
         res&&myP&&React.createElement("div",{className:"ptsc"},
           React.createElement("span",{className:"ptsv"},pnt),
           React.createElement("span",{className:"ptsl"},"pts")
+        ),
+        st!=="upcoming"&&p.players&&React.createElement("div",{style:{marginTop:10}},
+          React.createElement("div",{style:{fontSize:10,color:"var(--mut)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}},"Pronósticos del grupo"),
+          React.createElement("div",{className:"pg"},
+            p.players.map(function(pl){
+              var pred=p.preds[m.id]&&p.preds[m.id][pl.id];
+              var pnt2=pts(pred,res);
+              var isMe=pl.id===p.user.id;
+              return React.createElement("div",{key:pl.id,className:"pgi",style:isMe?{border:"1px solid var(--acc)"}:{}},
+                React.createElement("div",{className:"pgn"},isMe?"⭐ "+pl.name:pl.name),
+                pred
+                  ?React.createElement("div",{className:"pgs"+(res?(pnt2===6?" pgok":pnt2===3?" pgpa":""):"")},
+                      pred.home+"-"+pred.away+" "+(res?(pnt2===6?"🎯":pnt2===3?"✅":"❌"):""))
+                  :React.createElement("div",{style:{fontSize:12,color:"var(--mut)"}},"-")
+              );
+            })
+          )
         )
       );
     })
