@@ -40,13 +40,13 @@ var PLAYERS=[
   {id:"p2",name:"Pablo F",token:"pabf3k"},
   {id:"p3",name:"Silvina",token:"sil9m"},
   {id:"p4",name:"Gabriela",token:"gabr2n"},
-  {id:"p5",name:"Sabrina",token:"sabr5p"},
   {id:"p6",name:"Juan",token:"juan8q"},
   {id:"p7",name:"Pablo Y",token:"paby1r"},
   {id:"p8",name:"Matias",token:"mati4s"},
   {id:"p9",name:"Eliana",token:"eli6t"},
   {id:"p10",name:"Oscar",token:"osca3u"},
-  {id:"p11",name:"Gabriel",token:"gabi9v"}
+  {id:"p11",name:"Andres L",token:"andr4l"},
+  {id:"p12",name:"Gabriel",token:"gabi9v"}
 ];
 
 var MATCHES=[
@@ -143,7 +143,7 @@ function status(ko){
 function fmt(ko){
   var d=new Date(ko);
   return d.toLocaleDateString("es-AR",{weekday:"short",day:"2-digit",month:"short"})+" "+
-         d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+         d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",hour12:false});
 }
 
 var CSS=`
