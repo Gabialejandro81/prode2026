@@ -381,24 +381,33 @@ function Matches(p){
           React.createElement("span",{className:"mc-t"},fmt(m.kickoff))
         ),
         React.createElement("div",{className:"mc-te"},
-          React.createElement("span",{className:"tn"},flag(m.home)+" "+m.home),
-          React.createElement("span",{className:"vs"},"VS"),
-          React.createElement("span",{className:"tnr"},m.away+" "+flag(m.away))
+          React.createElement("span",{className:"tn",style:{fontSize:13}},flag(m.home)+" "+m.home),
+          st==="upcoming"
+            ? React.createElement("div",{style:{display:"flex",alignItems:"center",gap:4,flexShrink:0}},
+                React.createElement("input",{className:"si",type:"number",placeholder:"—",value:hv,
+                  onChange:function(e){setLocal(function(l){return Object.assign({},l,{[m.id+"h"]:e.target.value.replace(/\D/,"").slice(0,2)});})}}),
+                React.createElement("span",{className:"sis"},":"),
+                React.createElement("input",{className:"si",type:"number",placeholder:"—",value:av,
+                  onChange:function(e){setLocal(function(l){return Object.assign({},l,{[m.id+"a"]:e.target.value.replace(/\D/,"").slice(0,2)});})}})
+              )
+            : React.createElement("div",{style:{display:"flex",alignItems:"center",flexShrink:0}},
+                res
+                  ? React.createElement("span",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:3,color:"var(--txt)"}},res.home+"-"+res.away)
+                  : React.createElement("span",{className:"vs"},"VS")
+              ),
+          React.createElement("span",{className:"tnr",style:{fontSize:13}},m.away+" "+flag(m.away))
         ),
-        React.createElement("div",{className:"vn"},m.venue),
-        React.createElement("div",null,
-          st==="upcoming"&&React.createElement("span",{className:"bdg bup"},"Abierto"),
-          st==="live"&&React.createElement("span",{className:"bdg blv"},"● En vivo"),
-          st==="finished"&&React.createElement("span",{className:"bdg bfn"},"Finalizado")
-        ),
-        res&&React.createElement("div",{className:"res"},res.home+" — "+res.away),
-        st==="upcoming"&&React.createElement("div",{className:"sir"},
-          React.createElement("input",{className:"si",type:"number",placeholder:"—",value:hv,
-            onChange:function(e){setLocal(function(l){return Object.assign({},l,{[m.id+"h"]:e.target.value.replace(/\D/,"").slice(0,2)});})}}),
-          React.createElement("span",{className:"sis"},":"),
-          React.createElement("input",{className:"si",type:"number",placeholder:"—",value:av,
-            onChange:function(e){setLocal(function(l){return Object.assign({},l,{[m.id+"a"]:e.target.value.replace(/\D/,"").slice(0,2)});})}}),
-          React.createElement("button",{className:"sbtn"+(saved[m.id]?" ok":""),onClick:function(){save(m.id);}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:6}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}},
+            React.createElement("span",{style:{fontSize:10,color:"var(--mut)"}},m.venue),
+            st==="upcoming"&&React.createElement("span",{className:"bdg bup",style:{margin:0}},"Abierto"),
+            st==="live"&&React.createElement("span",{className:"bdg blv",style:{margin:0}},"● En vivo"),
+            st==="finished"&&React.createElement("span",{className:"bdg bfn",style:{margin:0}},"Finalizado")
+          ),
+          st==="upcoming"&&React.createElement("button",{
+            className:"sbtn"+(saved[m.id]?" ok":""),
+            style:{flex:"none",padding:"7px 14px",fontSize:11,marginLeft:8},
+            onClick:function(){save(m.id);}},
             saved[m.id]?"✓ OK":myP?"Actualizar":"Guardar")
         ),
         st!=="upcoming"&&!myP&&React.createElement("div",{className:"lk"},"🔒 No ingresaste pronóstico"),
