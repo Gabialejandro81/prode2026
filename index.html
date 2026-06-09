@@ -246,6 +246,7 @@ function App(){
   var _t=s("matches"),tab=_t[0],setTab=_t[1];
   var _to=s(""),toast=_to[0],setToast=_to[1];
   var _l=s(false),loaded=_l[0],setLoaded=_l[1];
+  var _ck=s(0),clock=_ck[0],setClock=_ck[1];
 
   e(function(){
     fbGet("players").then(function(data){
@@ -261,7 +262,8 @@ function App(){
     var o1=fbOn("preds",function(v){setPreds(v||{});});
     var o2=fbOn("results",function(v){setResults(v||{});});
     var o3=fbOn("players",function(v){if(v)setPlayers(Object.values(v));});
-    return function(){o1();o2();o3();};
+    var tick=setInterval(function(){setClock(function(c){return c+1;});},30000);
+    return function(){o1();o2();o3();clearInterval(tick);};
   },[]);
 
   function showToast(m){setToast(m);setTimeout(function(){setToast("");},2500);}
@@ -351,11 +353,16 @@ function Matches(p){
   var filtered=grp==="Todos"?MATCHES:MATCHES.filter(function(m){return m.group===grp;});
 
   function save(mid){
+    var match=MATCHES.find(function(x){return x.id===mid;});
+    if(!match||status(match.kickoff)!=="upcoming"){
+      p.showToast("🔒 Este partido ya cerró");
+      return;
+    }
     var myP=p.preds[mid]&&p.preds[mid][p.user.id];
     var h=local[mid+"h"]!==undefined?local[mid+"h"]:(myP?myP.home:"");
     var a=local[mid+"a"]!==undefined?local[mid+"a"]:(myP?myP.away:"");
     if(h===""||a===""){p.showToast("⚠️ Completá ambos goles");return;}
-    fbSet("preds/"+mid+"/"+p.user.id,{home:+h,away:+a});
+    fbSet("preds/"+mid+"/"+p.user.id,{home:+h,away:+a,ts:firebase.database.ServerValue.TIMESTAMP});
     setSaved(function(s){return Object.assign({},s,{[mid]:true});});
     setTimeout(function(){setSaved(function(s){return Object.assign({},s,{[mid]:false});});},2000);
     p.showToast("✅ Pronóstico guardado");
