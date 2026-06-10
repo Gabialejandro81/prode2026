@@ -126,6 +126,10 @@ var MATCHES=[
 
 var ADMIN="admin2026";
 
+var CHAMP_DEADLINE=new Date("2026-06-18T23:59:59");
+var CHAMP_PTS=10;
+var TEAMS_48=["Alemania","Arabia Saudita","Argelia","Argentina","Australia","Austria","Bélgica","Bosnia y Herz.","Brasil","Cabo Verde","Canadá","Colombia","Corea del Sur","Costa de Marfil","Croacia","Curazao","Ecuador","Egipto","Escocia","España","Estados Unidos","Francia","Ghana","Haití","Inglaterra","Irak","Irán","Japón","Jordania","Marruecos","México","Noruega","Nueva Zelanda","Países Bajos","Panamá","Paraguay","Portugal","Qatar","RD Congo","República Checa","Senegal","Sudáfrica","Suecia","Suiza","Túnez","Turquía","Uruguay","Uzbekistán"];
+
 var FLAGS={"México":"🇲🇽","Sudáfrica":"🇿🇦","Corea del Sur":"🇰🇷","República Checa":"🇨🇿","Rep. Checa":"🇨🇿","Canadá":"🇨🇦","Bosnia y Herz.":"🇧🇦","Estados Unidos":"🇺🇸","Paraguay":"🇵🇾","Qatar":"🇶🇦","Suiza":"🇨🇭","Brasil":"🇧🇷","Marruecos":"🇲🇦","Haití":"🇭🇹","Escocia":"🏴","Australia":"🇦🇺","Turquía":"🇹🇷","Alemania":"🇩🇪","Curazao":"🇨🇼","Países Bajos":"🇳🇱","Japón":"🇯🇵","Costa de Marfil":"🇨🇮","Ecuador":"🇪🇨","Suecia":"🇸🇪","Túnez":"🇹🇳","España":"🇪🇸","Cabo Verde":"🇨🇻","Bélgica":"🇧🇪","Egipto":"🇪🇬","Arabia Saudita":"🇸🇦","Uruguay":"🇺🇾","Irán":"🇮🇷","Nueva Zelanda":"🇳🇿","Francia":"🇫🇷","Senegal":"🇸🇳","Irak":"🇮🇶","Noruega":"🇳🇴","Argentina":"🇦🇷","Argelia":"🇩🇿","Austria":"🇦🇹","Jordania":"🇯🇴","Portugal":"🇵🇹","RD Congo":"🇨🇩","Inglaterra":"🏴","Croacia":"🇭🇷","Ghana":"🇬🇭","Panamá":"🇵🇦","Uzbekistán":"🇺🇿","Colombia":"🇨🇴"};
 function flag(n){return FLAGS[n]||"⚽";}
 
@@ -247,6 +251,8 @@ function App(){
   var _to=s(""),toast=_to[0],setToast=_to[1];
   var _l=s(false),loaded=_l[0],setLoaded=_l[1];
   var _ck=s(0),clock=_ck[0],setClock=_ck[1];
+  var _ch=s({}),champs=_ch[0],setChamps=_ch[1];
+  var _cr=s(null),champion=_cr[0],setChampion=_cr[1];
 
   e(function(){
     fbGet("players").then(function(data){
@@ -262,8 +268,10 @@ function App(){
     var o1=fbOn("preds",function(v){setPreds(v||{});});
     var o2=fbOn("results",function(v){setResults(v||{});});
     var o3=fbOn("players",function(v){if(v)setPlayers(Object.values(v));});
+    var o4=fbOn("champs",function(v){setChamps(v||{});});
+    var o5=fbOn("champion",function(v){setChampion(v||null);});
     var tick=setInterval(function(){setClock(function(c){return c+1;});},30000);
-    return function(){o1();o2();o3();clearInterval(tick);};
+    return function(){o1();o2();o3();o4();o5();clearInterval(tick);};
   },[]);
 
   function showToast(m){setToast(m);setTimeout(function(){setToast("");},2500);}
@@ -279,11 +287,11 @@ function App(){
   function lb(){
     if(!players) return [];
     return players.map(function(p){
-      return Object.assign({},p,{
-        total:MATCHES.reduce(function(acc,m){
-          return acc+pts(preds[m.id]&&preds[m.id][p.id],results[m.id]);
-        },0)
-      });
+      var base=MATCHES.reduce(function(acc,m){
+        return acc+pts(preds[m.id]&&preds[m.id][p.id],results[m.id]);
+      },0);
+      var champBonus=(champion&&champs[p.id]&&champs[p.id].team===champion)?CHAMP_PTS:0;
+      return Object.assign({},p,{total:base+champBonus,champBonus:champBonus});
     }).sort(function(a,b){return b.total-a.total;});
   }
 
@@ -296,9 +304,9 @@ function App(){
     React.createElement("div",{className:"app"},
       React.createElement(Hdr,{user:user,isAdmin:isAdmin,onLogout:function(){setUser(null);}}),
       isAdmin
-        ? React.createElement(Admin,{players:players,preds:preds,results:results,showToast:showToast})
+        ? React.createElement(Admin,{players:players,preds:preds,results:results,champs:champs,champion:champion,showToast:showToast})
         : React.createElement(React.Fragment,null,
-            tab==="matches"&&React.createElement(Matches,{preds:preds,results:results,user:user,players:players,showToast:showToast}),
+            tab==="matches"&&React.createElement(Matches,{preds:preds,results:results,user:user,players:players,champs:champs,showToast:showToast}),
             tab==="table"&&React.createElement(Table,{lb:lb(),user:user}),
             tab==="stats"&&React.createElement(Stats,{preds:preds,results:results,user:user}),
             React.createElement("nav",{className:"bnav"},
@@ -368,7 +376,52 @@ function Matches(p){
     p.showToast("✅ Pronóstico guardado");
   }
 
+  var champOpen=new Date()<CHAMP_DEADLINE;
+  var myChamp=p.champs&&p.champs[p.user.id];
+  var _cs=useState(""),champSel=_cs[0],setChampSel=_cs[1];
+  function saveChamp(){
+    if(new Date()>=CHAMP_DEADLINE){p.showToast("🔒 El plazo para elegir campeón cerró");return;}
+    var pick=champSel||(myChamp?myChamp.team:"");
+    if(!pick){p.showToast("⚠️ Elegí un país");return;}
+    fbSet("champs/"+p.user.id,{team:pick,ts:firebase.database.ServerValue.TIMESTAMP});
+    p.showToast("🏆 Campeón guardado: "+pick);
+  }
   return React.createElement("div",{className:"sec"},
+    React.createElement("div",{className:"mc",style:{border:"1px solid var(--gld)",background:"linear-gradient(135deg,#0f1520,#1a1408)"}},
+      React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:17,letterSpacing:1.5,color:"var(--gld)",marginBottom:4}},"🏆 ¿Quién va a ser campeón?"),
+      React.createElement("div",{style:{fontSize:11,color:"var(--mut)",marginBottom:10}},
+        champOpen
+          ? "Vale "+CHAMP_PTS+" pts · Podés cambiarlo hasta el 18/06 a las 23:59"
+          : "Cerrado · Valía "+CHAMP_PTS+" pts"),
+      champOpen
+        ? React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
+            React.createElement("select",{
+              value:champSel||(myChamp?myChamp.team:""),
+              onChange:function(e){setChampSel(e.target.value);},
+              style:{flex:1,padding:"10px 12px",background:"var(--s2)",border:"2px solid var(--b)",borderRadius:8,color:"var(--txt)",fontFamily:"'DM Sans',sans-serif",fontSize:14,outline:"none"}},
+              React.createElement("option",{value:""},"— Elegí un país —"),
+              TEAMS_48.map(function(t){return React.createElement("option",{key:t,value:t},flag(t)+" "+t);})
+            ),
+            React.createElement("button",{className:"sbtn",style:{flex:"none",padding:"10px 16px"},onClick:saveChamp},myChamp?"Cambiar":"Guardar")
+          )
+        : null,
+      myChamp&&React.createElement("div",{style:{marginTop:8,fontSize:13,color:"var(--grn)",fontWeight:600}},"Tu campeón: "+flag(myChamp.team)+" "+myChamp.team),
+      !champOpen&&!myChamp&&React.createElement("div",{style:{fontSize:12,color:"var(--red)",fontWeight:600}},"No elegiste campeón 🔒"),
+      !champOpen&&p.players&&React.createElement("div",{style:{marginTop:10}},
+        React.createElement("div",{style:{fontSize:10,color:"var(--mut)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}},"Campeones del grupo"),
+        React.createElement("div",{className:"pg"},
+          p.players.map(function(pl){
+            var ch=p.champs&&p.champs[pl.id];
+            var isMe=pl.id===p.user.id;
+            return React.createElement("div",{key:pl.id,className:"pgi",style:isMe?{border:"1px solid var(--gld)"}:{}},
+              React.createElement("div",{className:"pgn"},isMe?"⭐ "+pl.name:pl.name),
+              ch?React.createElement("div",{style:{fontSize:13,fontWeight:600}},flag(ch.team)+" "+ch.team)
+                :React.createElement("div",{style:{fontSize:12,color:"var(--mut)"}},"-")
+            );
+          })
+        )
+      )
+    ),
     React.createElement("div",{className:"stit"},"Partidos"),
     React.createElement("div",{className:"gf"},
       groups.map(function(g){
@@ -456,6 +509,7 @@ function Table(p){
         React.createElement("span",{className:"lbp"+(i===0?" g1":i===1?" g2":i===2?" g3":"")},
           i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1),
         React.createElement("span",{className:"lbn"},pl.name,
+          pl.champBonus>0&&React.createElement("span",{style:{marginLeft:4}},"🏆"),
           pl.id===p.user.id&&React.createElement("span",{style:{color:"var(--acc)",fontSize:10,marginLeft:6}},"← vos")),
         React.createElement("div",{style:{textAlign:"right"}},
           React.createElement("div",{className:"lbpts"},pl.total),
@@ -502,6 +556,7 @@ function Admin(p){
   var _g=useState("Todos"),grp=_g[0],setGrp=_g[1];
   var _nn=useState(""),nn=_nn[0],setNn=_nn[1];
   var _nt=useState(""),nt=_nt[0],setNt=_nt[1];
+  var _ca=useState(""),champSelAdmin=_ca[0],setChampSelAdmin=_ca[1];
 
   var groups=["Todos","Grupo A","Grupo B","Grupo C","Grupo D","Grupo E","Grupo F","Grupo G","Grupo H","Grupo I","Grupo J","Grupo K","Grupo L"];
   var fm=grp==="Todos"?MATCHES:MATCHES.filter(function(m){return m.group===grp;});
@@ -543,6 +598,22 @@ function Admin(p){
     ),
 
     at==="results"&&React.createElement(React.Fragment,null,
+      React.createElement("div",{className:"ac",style:{border:"1px solid var(--gld)"}},
+        React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:15,color:"var(--gld)",marginBottom:8}},"🏆 CAMPEÓN DEL MUNDIAL"),
+        React.createElement("div",{style:{fontSize:11,color:"var(--mut)",marginBottom:8}},"Cargalo SOLO cuando termine la final. Suma "+CHAMP_PTS+" pts a quienes lo acertaron."),
+        React.createElement("div",{style:{display:"flex",gap:8}},
+          React.createElement("select",{value:champSelAdmin,onChange:function(e){setChampSelAdmin(e.target.value);},
+            style:{flex:1,padding:"9px 11px",background:"var(--s2)",border:"2px solid var(--b)",borderRadius:8,color:"var(--txt)",fontFamily:"'DM Sans',sans-serif",fontSize:13,outline:"none"}},
+            React.createElement("option",{value:""},p.champion?("Actual: "+p.champion):"— Sin definir —"),
+            TEAMS_48.map(function(t){return React.createElement("option",{key:t,value:t},flag(t)+" "+t);})
+          ),
+          React.createElement("button",{className:"cbtn",style:{width:"auto",marginTop:0,padding:"9px 14px"},onClick:function(){
+            if(!champSelAdmin){p.showToast("⚠️ Elegí el país campeón");return;}
+            fbSet("champion",champSelAdmin);
+            p.showToast("🏆 Campeón definido: "+champSelAdmin);
+          }},"Confirmar")
+        )
+      ),
       React.createElement("div",{className:"stit",style:{color:"var(--red)"}},"Cargar resultados"),
       React.createElement("div",{className:"gf"},
         groups.map(function(g){return React.createElement("button",{key:g,className:"gfb"+(grp===g?" on":""),onClick:function(){setGrp(g);}},g);})),
