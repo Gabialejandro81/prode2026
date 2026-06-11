@@ -5,7 +5,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <title>Prode Mundial 2026 - Mesa de Ayuda</title>
-  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#07090f}</style>
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg,#07090f)}</style>
 </head>
 <body>
 <div id="root"></div>
@@ -156,10 +156,11 @@ function fmt(ko){
 var CSS=`
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#07090f;--s:#0f1520;--s2:#161e30;--b:#1e2d47;--acc:#f5a623;--red:#e8380d;--grn:#22c55e;--txt:#dde3f0;--mut:#5a6a8a;--gld:#ffd700}
+:root{--bg:#07090f;--s:#0f1520;--s2:#161e30;--b:#1e2d47;--acc:#f5a623;--red:#e8380d;--grn:#22c55e;--txt:#dde3f0;--mut:#5a6a8a;--gld:#ffd700;--hdrg:linear-gradient(135deg,#07090f,#150820);--champg:linear-gradient(135deg,#0f1520,#1a1408);--loging:linear-gradient(160deg,#07090f,#150820);--subtle:#2a3550}
+[data-theme="light"]{--bg:#eef0f5;--s:#ffffff;--s2:#f1f3f8;--b:#d4dae6;--acc:#d97e00;--red:#d32f0d;--grn:#15803d;--txt:#1a2335;--mut:#67738c;--gld:#a87900;--hdrg:linear-gradient(135deg,#ffffff,#f3eefe);--champg:linear-gradient(135deg,#ffffff,#fdf6e3);--loging:linear-gradient(160deg,#eef0f5,#e9e2f5);--subtle:#a8b2c7}
 body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;min-height:100vh}
 .app{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:76px}
-.hdr{background:linear-gradient(135deg,#07090f,#150820);padding:16px 16px 12px;border-bottom:2px solid var(--acc);position:sticky;top:0;z-index:100}
+.hdr{background:var(--hdrg);padding:16px 16px 12px;border-bottom:2px solid var(--acc);position:sticky;top:0;z-index:100}
 .hdr-r{display:flex;align-items:center;justify-content:space-between}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--acc)}
 .chip{background:var(--s2);border:1px solid var(--b);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--acc)}
@@ -226,7 +227,7 @@ body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;min-
 .pgn{font-size:10px;color:var(--mut)}
 .pgs{font-family:'Bebas Neue',sans-serif;font-size:17px}
 .pgok{color:var(--grn)}.pgpa{color:var(--acc)}
-.login{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;background:linear-gradient(160deg,#07090f,#150820)}
+.login{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;background:var(--loging)}
 .ll{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:5px;color:var(--acc);text-align:center;line-height:1;margin-bottom:6px}
 .ls{font-size:13px;color:var(--mut);text-align:center;margin-bottom:36px;text-transform:uppercase;letter-spacing:2px}
 .lcard{background:var(--s);border:1px solid var(--b);border-radius:16px;padding:26px 22px;width:100%;max-width:340px}
@@ -253,6 +254,12 @@ function App(){
   var _ck=s(0),clock=_ck[0],setClock=_ck[1];
   var _ch=s({}),champs=_ch[0],setChamps=_ch[1];
   var _cr=s(null),champion=_cr[0],setChampion=_cr[1];
+  var _th=s(localStorage.getItem("prode_theme")||"dark"),theme=_th[0],setTheme=_th[1];
+
+  e(function(){
+    document.documentElement.setAttribute("data-theme",theme);
+    localStorage.setItem("prode_theme",theme);
+  },[theme]);
 
   e(function(){
     fbGet("players").then(function(data){
@@ -302,7 +309,7 @@ function App(){
   return React.createElement(React.Fragment,null,
     React.createElement("style",null,CSS),
     React.createElement("div",{className:"app"},
-      React.createElement(Hdr,{user:user,isAdmin:isAdmin,onLogout:function(){setUser(null);}}),
+      React.createElement(Hdr,{user:user,isAdmin:isAdmin,theme:theme,onToggleTheme:function(){setTheme(theme==="dark"?"light":"dark");},onLogout:function(){setUser(null);}}),
       isAdmin
         ? React.createElement(Admin,{players:players,preds:preds,results:results,champs:champs,champion:champion,showToast:showToast})
         : React.createElement(React.Fragment,null,
@@ -337,15 +344,16 @@ function Login(p){
       React.createElement("button",{className:"lbtn",onClick:go},"ENTRAR"),
       err&&React.createElement("div",{className:"lerr"},err)
     ),
-    React.createElement("div",{style:{marginTop:20,fontSize:11,color:"#2a3550",textAlign:"center"}},"Tu token está en el link que te mandó el admin")
+    React.createElement("div",{style:{marginTop:20,fontSize:11,color:"var(--subtle)",textAlign:"center"}},"Tu token está en el link que te mandó el admin")
   );
 }
 
 function Hdr(p){
   return React.createElement("div",{className:"hdr"},
     React.createElement("div",{className:"hdr-r"},
-      React.createElement("div",{className:"logo"},React.createElement("div",null,"PRODE⚽26"),React.createElement("div",{style:{fontSize:"11px",letterSpacing:"2px",color:"#fff",fontFamily:"'DM Sans',sans-serif",fontWeight:600,textTransform:"uppercase",marginTop:"-2px"}},"Mesa de Ayuda")),
+      React.createElement("div",{className:"logo"},React.createElement("div",null,"PRODE⚽26"),React.createElement("div",{style:{fontSize:"11px",letterSpacing:"2px",color:"var(--txt)",fontFamily:"'DM Sans',sans-serif",fontWeight:600,textTransform:"uppercase",marginTop:"-2px"}},"Mesa de Ayuda")),
       React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
+        React.createElement("button",{onClick:p.onToggleTheme,style:{background:"var(--s2)",border:"1px solid var(--b)",borderRadius:20,padding:"4px 10px",fontSize:14,cursor:"pointer"}},p.theme==="dark"?"☀️":"🌙"),
         React.createElement("div",{className:"chip"},p.isAdmin?"🔧 ADMIN":p.user.name),
         React.createElement("button",{className:"out",onClick:p.onLogout},"salir")
       )
@@ -357,6 +365,7 @@ function Matches(p){
   var _l=useState({}),local=_l[0],setLocal=_l[1];
   var _s=useState({}),saved=_s[0],setSaved=_s[1];
   var _g=useState("Todos"),grp=_g[0],setGrp=_g[1];
+  var _ex=useState({}),expanded=_ex[0],setExpanded=_ex[1];
   var groups=["Todos","Grupo A","Grupo B","Grupo C","Grupo D","Grupo E","Grupo F","Grupo G","Grupo H","Grupo I","Grupo J","Grupo K","Grupo L"];
   var filtered=grp==="Todos"?MATCHES:MATCHES.filter(function(m){return m.group===grp;});
 
@@ -387,7 +396,7 @@ function Matches(p){
     p.showToast("🏆 Campeón guardado: "+pick);
   }
   return React.createElement("div",{className:"sec"},
-    React.createElement("div",{className:"mc",style:{border:"1px solid var(--gld)",background:"linear-gradient(135deg,#0f1520,#1a1408)"}},
+    React.createElement("div",{className:"mc",style:{border:"1px solid var(--gld)",background:"var(--champg)"}},
       React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:17,letterSpacing:1.5,color:"var(--gld)",marginBottom:4}},"🏆 ¿Quién va a ser campeón?"),
       React.createElement("div",{style:{fontSize:11,color:"var(--mut)",marginBottom:10}},
         champOpen
@@ -480,8 +489,13 @@ function Matches(p){
           React.createElement("span",{className:"ptsl"},"pts")
         ),
         st!=="upcoming"&&p.players&&React.createElement("div",{style:{marginTop:10}},
-          React.createElement("div",{style:{fontSize:10,color:"var(--mut)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}},"Pronósticos del grupo"),
-          React.createElement("div",{className:"pg"},
+          React.createElement("button",{
+            onClick:function(){setExpanded(function(ex){var n=Object.assign({},ex);n[m.id]=!n[m.id];return n;});},
+            style:{width:"100%",background:"var(--s2)",border:"1px solid var(--b)",borderRadius:8,padding:"8px 12px",color:"var(--mut)",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",fontFamily:"'DM Sans',sans-serif"}},
+            React.createElement("span",null,"Pronósticos del grupo ("+p.players.length+")"),
+            React.createElement("span",{style:{fontSize:13}},expanded[m.id]?"▲":"▼")
+          ),
+          expanded[m.id]&&React.createElement("div",{className:"pg"},
             p.players.map(function(pl){
               var pred=p.preds[m.id]&&p.preds[m.id][pl.id];
               var pnt2=pts(pred,res);
