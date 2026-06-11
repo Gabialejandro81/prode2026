@@ -368,6 +368,11 @@ function Matches(p){
   var _ex=useState({}),expanded=_ex[0],setExpanded=_ex[1];
   var groups=["Todos","Grupo A","Grupo B","Grupo C","Grupo D","Grupo E","Grupo F","Grupo G","Grupo H","Grupo I","Grupo J","Grupo K","Grupo L"];
   var filtered=grp==="Todos"?MATCHES:MATCHES.filter(function(m){return m.group===grp;});
+  var hoy=new Date();
+  var todayMatches=MATCHES.filter(function(m){
+    var k=new Date(m.kickoff);
+    return k.getDate()===hoy.getDate()&&k.getMonth()===hoy.getMonth()&&k.getFullYear()===hoy.getFullYear();
+  });
 
   function save(mid){
     var match=MATCHES.find(function(x){return x.id===mid;});
@@ -431,13 +436,21 @@ function Matches(p){
         )
       )
     ),
-    React.createElement("div",{className:"stit"},"Partidos"),
+    todayMatches.length>0&&React.createElement("div",{style:{marginBottom:16}},
+      React.createElement("div",{className:"stit",style:{display:"flex",alignItems:"center",gap:6}},"HOY ⚽",React.createElement("span",{style:{fontSize:12,color:"var(--mut)",fontFamily:"'DM Sans',sans-serif",letterSpacing:0,fontWeight:600}},"("+todayMatches.length+")")),
+      renderList(todayMatches)
+    ),
+    React.createElement("div",{className:"stit"},"Todos los partidos"),
     React.createElement("div",{className:"gf"},
       groups.map(function(g){
         return React.createElement("button",{key:g,className:"gfb"+(grp===g?" on":""),onClick:function(){setGrp(g);}},g);
       })
     ),
-    filtered.map(function(m){
+    renderList(filtered)
+  );
+
+  function renderList(list){
+    return list.map(function(m){
       var st=status(m.kickoff);
       var myP=p.preds[m.id]&&p.preds[m.id][p.user.id];
       var res=p.results[m.id];
@@ -511,8 +524,8 @@ function Matches(p){
           )
         )
       );
-    })
-  );
+    });
+  }
 }
 
 function Table(p){
