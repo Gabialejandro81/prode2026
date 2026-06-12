@@ -584,6 +584,7 @@ function Admin(p){
   var _nn=useState(""),nn=_nn[0],setNn=_nn[1];
   var _nt=useState(""),nt=_nt[0],setNt=_nt[1];
   var _ca=useState(""),champSelAdmin=_ca[0],setChampSelAdmin=_ca[1];
+  var _aex=useState({}),aexp=_aex[0],setAexp=_aex[1];
 
   var groups=["Todos","Grupo A","Grupo B","Grupo C","Grupo D","Grupo E","Grupo F","Grupo G","Grupo H","Grupo I","Grupo J","Grupo K","Grupo L"];
   var fm=grp==="Todos"?MATCHES:MATCHES.filter(function(m){return m.group===grp;});
@@ -702,18 +703,26 @@ function Admin(p){
           React.createElement("div",{style:{fontSize:10,color:"var(--mut)",marginBottom:6}},fmt(m.kickoff)),
           st==="upcoming"
             ? React.createElement("div",{style:{fontSize:11,color:"var(--mut)"}},"🔒 Ocultos hasta que empiece")
-            : React.createElement("div",{className:"pg"},
-                p.players&&p.players.map(function(pl){
-                  var pred=p.preds[m.id]&&p.preds[m.id][pl.id];
-                  var pnt=pts(pred,res);
-                  return React.createElement("div",{key:pl.id,className:"pgi"},
-                    React.createElement("div",{className:"pgn"},pl.name),
-                    pred
-                      ? React.createElement("div",{className:"pgs"+(res?(pnt===6?" pgok":pnt===3?" pgpa":""):"")},
-                          pred.home+"-"+pred.away+" "+(res?(pnt===6?"🎯":pnt===3?"✅":"❌"):""))
-                      : React.createElement("div",{style:{fontSize:12,color:"var(--b)"}},"—")
-                  );
-                })
+            : React.createElement("div",null,
+                React.createElement("button",{
+                  onClick:function(){setAexp(function(ex){var n=Object.assign({},ex);n[m.id]=!n[m.id];return n;});},
+                  style:{width:"100%",background:"var(--s2)",border:"1px solid var(--b)",borderRadius:8,padding:"8px 12px",color:"var(--mut)",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",fontFamily:"'DM Sans',sans-serif"}},
+                  React.createElement("span",null,"Ver pronósticos ("+(p.players?p.players.length:0)+")"),
+                  React.createElement("span",{style:{fontSize:13}},aexp[m.id]?"▲":"▼")
+                ),
+                aexp[m.id]&&React.createElement("div",{className:"pg",style:{marginTop:8}},
+                  p.players&&p.players.map(function(pl){
+                    var pred=p.preds[m.id]&&p.preds[m.id][pl.id];
+                    var pnt=pts(pred,res);
+                    return React.createElement("div",{key:pl.id,className:"pgi"},
+                      React.createElement("div",{className:"pgn"},pl.name),
+                      pred
+                        ? React.createElement("div",{className:"pgs"+(res?(pnt===6?" pgok":pnt===3?" pgpa":""):"")},
+                            pred.home+"-"+pred.away+" "+(res?(pnt===6?"🎯":pnt===3?"✅":"❌"):""))
+                        : React.createElement("div",{style:{fontSize:12,color:"var(--b)"}},"—")
+                    );
+                  })
+                )
               )
         );
       })
