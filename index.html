@@ -147,6 +147,15 @@ function status(ko){
   return diff>10?"upcoming":diff>-100?"live":"finished";
 }
 
+function jornada(ko){
+  var d=new Date(new Date(ko).getTime()-5*3600000);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function jornadaLabel(key){
+  var p=key.split("-");
+  var d=new Date(+p[0],+p[1]-1,+p[2],12,0,0);
+  return d.toLocaleDateString("es-AR",{weekday:"long",day:"2-digit",month:"long"});
+}
 function fmt(ko){
   var d=new Date(ko);
   return d.toLocaleDateString("es-AR",{weekday:"short",day:"2-digit",month:"short"})+" "+
@@ -364,15 +373,21 @@ function Hdr(p){
 function Matches(p){
   var _l=useState({}),local=_l[0],setLocal=_l[1];
   var _s=useState({}),saved=_s[0],setSaved=_s[1];
-  var _g=useState("Todos"),grp=_g[0],setGrp=_g[1];
   var _ex=useState({}),expanded=_ex[0],setExpanded=_ex[1];
-  var groups=["Todos","Grupo A","Grupo B","Grupo C","Grupo D","Grupo E","Grupo F","Grupo G","Grupo H","Grupo I","Grupo J","Grupo K","Grupo L"];
-  var filtered=grp==="Todos"?MATCHES:MATCHES.filter(function(m){return m.group===grp;});
-  var hoy=new Date();
-  var todayMatches=MATCHES.filter(function(m){
-    var k=new Date(m.kickoff);
-    return k.getDate()===hoy.getDate()&&k.getMonth()===hoy.getMonth()&&k.getFullYear()===hoy.getFullYear();
-  });
+  // Días únicos del torneo (por jornada FIFA), ordenados
+  var dias=[];
+  MATCHES.forEach(function(m){var j=jornada(m.kickoff);if(dias.indexOf(j)<0)dias.push(j);});
+  dias.sort();
+  // Día actual por jornada; si hoy no tiene partidos, ir al próximo día con partidos
+  var hoyKey=jornada(new Date().toISOString());
+  var idxInicial=dias.indexOf(hoyKey);
+  if(idxInicial<0){
+    idxInicial=0;
+    for(var i=0;i<dias.length;i++){if(dias[i]>=hoyKey){idxInicial=i;break;} if(i===dias.length-1)idxInicial=i;}
+  }
+  var _di=useState(idxInicial),diaIdx=_di[0],setDiaIdx=_di[1];
+  var diaActual=dias[diaIdx];
+  var filtered=MATCHES.filter(function(m){return jornada(m.kickoff)===diaActual;});
 
   function save(mid){
     var match=MATCHES.find(function(x){return x.id===mid;});
@@ -436,16 +451,23 @@ function Matches(p){
         )
       )
     ),
-    todayMatches.length>0&&React.createElement("div",{style:{marginBottom:16}},
-      React.createElement("div",{className:"stit",style:{display:"flex",alignItems:"center",gap:6}},"HOY ⚽",React.createElement("span",{style:{fontSize:12,color:"var(--mut)",fontFamily:"'DM Sans',sans-serif",letterSpacing:0,fontWeight:600}},"("+todayMatches.length+")")),
-      renderList(todayMatches)
+    React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:14}},
+      React.createElement("button",{
+        onClick:function(){if(diaIdx>0)setDiaIdx(diaIdx-1);},
+        disabled:diaIdx===0,
+        style:{width:44,height:44,flexShrink:0,borderRadius:10,border:"1px solid var(--b)",background:"var(--s)",color:diaIdx===0?"var(--mut)":"var(--acc)",fontSize:22,cursor:diaIdx===0?"default":"pointer",opacity:diaIdx===0?0.4:1}},"‹"),
+      React.createElement("div",{style:{flex:1,textAlign:"center"}},
+        React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:1,color:"var(--acc)",textTransform:"capitalize"}},jornadaLabel(diaActual)),
+        React.createElement("div",{style:{fontSize:11,color:"var(--mut)",marginTop:2}},"Día "+(diaIdx+1)+" de "+dias.length+" · "+filtered.length+(filtered.length===1?" partido":" partidos")+(diaActual===hoyKey?" · HOY":""))
+      ),
+      React.createElement("button",{
+        onClick:function(){if(diaIdx<dias.length-1)setDiaIdx(diaIdx+1);},
+        disabled:diaIdx===dias.length-1,
+        style:{width:44,height:44,flexShrink:0,borderRadius:10,border:"1px solid var(--b)",background:"var(--s)",color:diaIdx===dias.length-1?"var(--mut)":"var(--acc)",fontSize:22,cursor:diaIdx===dias.length-1?"default":"pointer",opacity:diaIdx===dias.length-1?0.4:1}},"›")
     ),
-    React.createElement("div",{className:"stit"},"Todos los partidos"),
-    React.createElement("div",{className:"gf"},
-      groups.map(function(g){
-        return React.createElement("button",{key:g,className:"gfb"+(grp===g?" on":""),onClick:function(){setGrp(g);}},g);
-      })
-    ),
+    diaActual!==hoyKey&&dias.indexOf(hoyKey)>=0&&React.createElement("button",{
+      onClick:function(){setDiaIdx(dias.indexOf(hoyKey));},
+      style:{width:"100%",marginBottom:14,padding:"8px",borderRadius:8,border:"1px solid var(--acc)",background:"transparent",color:"var(--acc)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",textTransform:"uppercase",letterSpacing:1}},"⚽ Volver a hoy"),
     renderList(filtered)
   );
 
@@ -457,10 +479,13 @@ function Matches(p){
       var pnt=pts(myP,res);
       var hv=local[m.id+"h"]!==undefined?local[m.id+"h"]:(myP?myP.home:"");
       var av=local[m.id+"a"]!==undefined?local[m.id+"a"]:(myP?myP.away:"");
+      var horaMatch=new Date(m.kickoff).getHours();
+      var esMadrugada=horaMatch>=0&&horaMatch<6;
       return React.createElement("div",{key:m.id,className:"mc"},
         React.createElement("div",{className:"mc-m"},
           React.createElement("span",{className:"mc-g"},m.group),
-          React.createElement("span",{className:"mc-t"},fmt(m.kickoff))
+          React.createElement("span",{className:"mc-t",style:esMadrugada?{color:"var(--gld)"}:{}},
+            esMadrugada?("🌙 "+fmt(m.kickoff)):fmt(m.kickoff))
         ),
         React.createElement("div",{className:"mc-te"},
           React.createElement("span",{className:"tn",style:{fontSize:13}},flag(m.home)+" "+m.home),
