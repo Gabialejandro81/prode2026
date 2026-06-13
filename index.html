@@ -302,12 +302,26 @@ function App(){
 
   function lb(){
     if(!players) return [];
+    // Partidos finalizados con resultado, ordenados cronológicamente
+    var jugados=MATCHES.filter(function(m){return results[m.id];})
+      .sort(function(a,b){return new Date(a.kickoff)-new Date(b.kickoff);});
     return players.map(function(p){
       var base=MATCHES.reduce(function(acc,m){
         return acc+pts(preds[m.id]&&preds[m.id][p.id],results[m.id]);
       },0);
       var champBonus=(champion&&champs[p.id]&&champs[p.id].team===champion)?CHAMP_PTS:0;
-      return Object.assign({},p,{total:base+champBonus,champBonus:champBonus});
+      // Calcular racha: recorrer partidos jugados desde el último hacia atrás
+      var racha=0,tipo=null;
+      for(var i=jugados.length-1;i>=0;i--){
+        var m=jugados[i];
+        var pred=preds[m.id]&&preds[m.id][p.id];
+        if(!pred) break; // no pronosticó: corta la racha
+        var acierto=pts(pred,results[m.id])>0;
+        if(tipo===null){tipo=acierto?"hot":"cold";racha=1;}
+        else if((tipo==="hot")===acierto){racha++;}
+        else break;
+      }
+      return Object.assign({},p,{total:base+champBonus,champBonus:champBonus,racha:racha,rachaTipo:tipo});
     }).sort(function(a,b){return b.total-a.total;});
   }
 
@@ -324,7 +338,7 @@ function App(){
         : React.createElement(React.Fragment,null,
             tab==="matches"&&React.createElement(Matches,{preds:preds,results:results,user:user,players:players,champs:champs,showToast:showToast}),
             tab==="table"&&React.createElement(Table,{lb:lb(),user:user}),
-            tab==="stats"&&React.createElement(Stats,{preds:preds,results:results,user:user}),
+            tab==="stats"&&React.createElement(Stats,{preds:preds,results:results,user:user,players:players}),
             React.createElement("nav",{className:"bnav"},
               [{id:"matches",i:"⚽",l:"Partidos"},{id:"table",i:"🏆",l:"Tabla"},{id:"stats",i:"📊",l:"Stats"}].map(function(t){
                 return React.createElement("button",{key:t.id,className:"bi"+(tab===t.id?" on":""),onClick:function(){setTab(t.id);}},
@@ -562,6 +576,7 @@ function Table(p){
           i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1),
         React.createElement("span",{className:"lbn"},pl.name,
           pl.champBonus>0&&React.createElement("span",{style:{marginLeft:4}},"🏆"),
+          pl.racha>=3&&React.createElement("span",{style:{marginLeft:6,fontSize:12,fontWeight:700,color:pl.rachaTipo==="hot"?"var(--red)":"#5aa9e6"}},(pl.rachaTipo==="hot"?"🔥":"❄️")+"x"+pl.racha),
           pl.id===p.user.id&&React.createElement("span",{style:{color:"var(--acc)",fontSize:10,marginLeft:6}},"← vos")),
         React.createElement("div",{style:{textAlign:"right"}},
           React.createElement("div",{className:"lbpts"},pl.total),
@@ -572,6 +587,7 @@ function Table(p){
 }
 
 function Stats(p){
+  var _rv=useState(""),rivalSel=_rv[0],setRivalSel=_rv[1];
   var played=MATCHES.filter(function(m){return p.results[m.id];});
   var mine=played.filter(function(m){return p.preds[m.id]&&p.preds[m.id][p.user.id];});
   var exact=mine.filter(function(m){return pts(p.preds[m.id][p.user.id],p.results[m.id])===6;});
@@ -587,6 +603,22 @@ function Stats(p){
     {l:"Pronosticados",v:mine.length,c:"var(--txt)"},
     {l:"% Acierto",v:pct+"%",c:"#a78bfa"}
   ];
+  // Head to Head
+  var rivales=(p.players||[]).filter(function(pl){return pl.id!==p.user.id;});
+  var h2hData=null;
+  if(rivalSel){
+    var winMe=0,winRival=0,emp=0,detalle=[];
+    played.forEach(function(m){
+      var pMe=p.preds[m.id]&&p.preds[m.id][p.user.id];
+      var pRi=p.preds[m.id]&&p.preds[m.id][rivalSel];
+      if(!pMe&&!pRi)return;
+      var ptMe=pts(pMe,p.results[m.id]),ptRi=pts(pRi,p.results[m.id]);
+      if(ptMe>ptRi)winMe++;else if(ptRi>ptMe)winRival++;else emp++;
+      detalle.push({m:m,ptMe:ptMe,ptRi:ptRi,pMe:pMe,pRi:pRi});
+    });
+    var rivalName=(rivales.find(function(r){return r.id===rivalSel;})||{}).name||"";
+    h2hData={winMe:winMe,winRival:winRival,emp:emp,detalle:detalle,rivalName:rivalName};
+  }
   return React.createElement("div",{className:"sec"},
     React.createElement("div",{className:"stit"},"📊 Mis estadísticas"),
     React.createElement("div",{className:"sg"},
@@ -596,7 +628,37 @@ function Stats(p){
           React.createElement("div",{className:"sl"},s.l));
       })
     ),
-    played.length===0&&React.createElement("div",{style:{textAlign:"center",color:"var(--mut)",padding:"36px 20px"}},"Sin resultados todavía.")
+    played.length===0&&React.createElement("div",{style:{textAlign:"center",color:"var(--mut)",padding:"36px 20px"}},"Sin resultados todavía."),
+    React.createElement("div",{className:"stit",style:{marginTop:24}},"⚔️ Mano a mano"),
+    React.createElement("select",{value:rivalSel,onChange:function(e){setRivalSel(e.target.value);},
+      style:{width:"100%",padding:"11px 13px",background:"var(--s2)",border:"2px solid var(--b)",borderRadius:8,color:"var(--txt)",fontFamily:"'DM Sans',sans-serif",fontSize:14,outline:"none",marginBottom:14}},
+      React.createElement("option",{value:""},"— Compará con un rival —"),
+      rivales.map(function(r){return React.createElement("option",{key:r.id,value:r.id},r.name);})
+    ),
+    h2hData&&React.createElement("div",null,
+      React.createElement("div",{style:{display:"flex",gap:8,marginBottom:14}},
+        React.createElement("div",{className:"sc",style:{flex:1,textAlign:"center",border:h2hData.winMe>h2hData.winRival?"1px solid var(--grn)":"1px solid var(--b)"}},
+          React.createElement("div",{className:"sv",style:{color:"var(--grn)"}},h2hData.winMe),
+          React.createElement("div",{className:"sl"},"Ganás vos")),
+        React.createElement("div",{className:"sc",style:{flex:1,textAlign:"center"}},
+          React.createElement("div",{className:"sv",style:{color:"var(--mut)"}},h2hData.emp),
+          React.createElement("div",{className:"sl"},"Empates")),
+        React.createElement("div",{className:"sc",style:{flex:1,textAlign:"center",border:h2hData.winRival>h2hData.winMe?"1px solid var(--red)":"1px solid var(--b)"}},
+          React.createElement("div",{className:"sv",style:{color:"var(--red)"}},h2hData.winRival),
+          React.createElement("div",{className:"sl"},h2hData.rivalName))
+      ),
+      h2hData.detalle.length===0
+        ? React.createElement("div",{style:{textAlign:"center",color:"var(--mut)",padding:"20px"}},"Sin partidos jugados todavía para comparar.")
+        : h2hData.detalle.slice().reverse().map(function(d){
+            return React.createElement("div",{key:d.m.id,className:"mc",style:{padding:10}},
+              React.createElement("div",{style:{fontSize:12,fontWeight:600,marginBottom:6}},flag(d.m.home)+" "+d.m.home+" "+p.results[d.m.id].home+"-"+p.results[d.m.id].away+" "+d.m.away+" "+flag(d.m.away)),
+              React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:12}},
+                React.createElement("span",{style:{color:d.ptMe>=d.ptRi?"var(--grn)":"var(--mut)"}},"Vos: "+(d.pMe?d.pMe.home+"-"+d.pMe.away:"-")+" ("+d.ptMe+")"),
+                React.createElement("span",{style:{color:d.ptRi>d.ptMe?"var(--red)":"var(--mut)"}},h2hData.rivalName+": "+(d.pRi?d.pRi.home+"-"+d.pRi.away:"-")+" ("+d.ptRi+")")
+              )
+            );
+          })
+    )
   );
 }
 
