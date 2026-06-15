@@ -586,23 +586,28 @@ function Table(p){
   );
 }
 
-function Stats(p){
-  var _rv=useState(""),rivalSel=_rv[0],setRivalSel=_rv[1];
-  var played=MATCHES.filter(function(m){return p.results[m.id];});
-  var mine=played.filter(function(m){return p.preds[m.id]&&p.preds[m.id][p.user.id];});
-  var exact=mine.filter(function(m){return pts(p.preds[m.id][p.user.id],p.results[m.id])===6;});
-  var part=mine.filter(function(m){return pts(p.preds[m.id][p.user.id],p.results[m.id])===3;});
-  var miss=mine.filter(function(m){return pts(p.preds[m.id][p.user.id],p.results[m.id])===0;});
-  var total=exact.length*6+part.length*3;
-  var pct=mine.length>0?Math.round((exact.length+part.length)/mine.length*100):0;
-  var stats=[
+function calcStats(preds,results,uid){
+  var played=MATCHES.filter(function(m){return results[m.id];});
+  var mine=played.filter(function(m){return preds[m.id]&&preds[m.id][uid];});
+  var exact=mine.filter(function(m){return pts(preds[m.id][uid],results[m.id])===6;}).length;
+  var part=mine.filter(function(m){return pts(preds[m.id][uid],results[m.id])===3;}).length;
+  var miss=mine.filter(function(m){return pts(preds[m.id][uid],results[m.id])===0;}).length;
+  var total=exact*6+part*3;
+  var pct=mine.length>0?Math.round((exact+part)/mine.length*100):0;
+  return [
     {l:"Total puntos",v:total,c:"var(--gld)"},
-    {l:"Exactos 🎯",v:exact.length,c:"var(--grn)"},
-    {l:"Ganador ✅",v:part.length,c:"var(--acc)"},
-    {l:"Errores ❌",v:miss.length,c:"var(--red)"},
+    {l:"Exactos 🎯",v:exact,c:"var(--grn)"},
+    {l:"Ganador ✅",v:part,c:"var(--acc)"},
+    {l:"Errores ❌",v:miss,c:"var(--red)"},
     {l:"Pronosticados",v:mine.length,c:"var(--txt)"},
     {l:"% Acierto",v:pct+"%",c:"#a78bfa"}
   ];
+}
+
+function Stats(p){
+  var _rv=useState(""),rivalSel=_rv[0],setRivalSel=_rv[1];
+  var played=MATCHES.filter(function(m){return p.results[m.id];});
+  var stats=calcStats(p.preds,p.results,p.user.id);
   // Head to Head
   var rivales=(p.players||[]).filter(function(pl){return pl.id!==p.user.id;});
   var h2hData=null;
@@ -636,6 +641,15 @@ function Stats(p){
       rivales.map(function(r){return React.createElement("option",{key:r.id,value:r.id},r.name);})
     ),
     h2hData&&React.createElement("div",null,
+      React.createElement("div",{style:{fontSize:11,color:"var(--mut)",textTransform:"uppercase",letterSpacing:1,marginBottom:8}},"Estadísticas de "+h2hData.rivalName),
+      React.createElement("div",{className:"sg"},
+        calcStats(p.preds,p.results,rivalSel).map(function(s){
+          return React.createElement("div",{key:s.l,className:"sc"},
+            React.createElement("div",{className:"sv",style:{color:s.c}},s.v),
+            React.createElement("div",{className:"sl"},s.l));
+        })
+      ),
+      React.createElement("div",{style:{fontSize:11,color:"var(--mut)",textTransform:"uppercase",letterSpacing:1,marginBottom:8,marginTop:6}},"Enfrentamiento directo"),
       React.createElement("div",{style:{display:"flex",gap:8,marginBottom:14}},
         React.createElement("div",{className:"sc",style:{flex:1,textAlign:"center",border:h2hData.winMe>h2hData.winRival?"1px solid var(--grn)":"1px solid var(--b)"}},
           React.createElement("div",{className:"sv",style:{color:"var(--grn)"}},h2hData.winMe),
@@ -676,6 +690,17 @@ function Admin(p){
   var groups=["Todos","Grupo A","Grupo B","Grupo C","Grupo D","Grupo E","Grupo F","Grupo G","Grupo H","Grupo I","Grupo J","Grupo K","Grupo L"];
   var fm=grp==="Todos"?MATCHES:MATCHES.filter(function(m){return m.group===grp;});
   var BASE=window.location.href.split("?")[0];
+
+  // Navegador de días para cargar resultados
+  var adminDias=[];
+  MATCHES.forEach(function(m){var j=jornada(m.kickoff);if(adminDias.indexOf(j)<0)adminDias.push(j);});
+  adminDias.sort();
+  var adminHoyKey=jornada(new Date().toISOString());
+  var adminIdxIni=adminDias.indexOf(adminHoyKey);
+  if(adminIdxIni<0){adminIdxIni=0;for(var ai=0;ai<adminDias.length;ai++){if(adminDias[ai]>=adminHoyKey){adminIdxIni=ai;break;}if(ai===adminDias.length-1)adminIdxIni=ai;}}
+  var _adi=useState(adminIdxIni),adiaIdx=_adi[0],setAdiaIdx=_adi[1];
+  var adiaActual=adminDias[adiaIdx];
+  var fmDia=MATCHES.filter(function(m){return jornada(m.kickoff)===adiaActual;});
 
   function saveRes(mid){
     var h=lr[mid+"h"],a=lr[mid+"a"];
@@ -730,9 +755,20 @@ function Admin(p){
         )
       ),
       React.createElement("div",{className:"stit",style:{color:"var(--red)"}},"Cargar resultados"),
-      React.createElement("div",{className:"gf"},
-        groups.map(function(g){return React.createElement("button",{key:g,className:"gfb"+(grp===g?" on":""),onClick:function(){setGrp(g);}},g);})),
-      fm.map(function(m){
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:14}},
+        React.createElement("button",{onClick:function(){if(adiaIdx>0)setAdiaIdx(adiaIdx-1);},disabled:adiaIdx===0,
+          style:{width:44,height:44,flexShrink:0,borderRadius:10,border:"1px solid var(--b)",background:"var(--s)",color:adiaIdx===0?"var(--mut)":"var(--red)",fontSize:22,cursor:adiaIdx===0?"default":"pointer",opacity:adiaIdx===0?0.4:1}},"‹"),
+        React.createElement("div",{style:{flex:1,textAlign:"center"}},
+          React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,letterSpacing:1,color:"var(--red)",textTransform:"capitalize"}},jornadaLabel(adiaActual)),
+          React.createElement("div",{style:{fontSize:11,color:"var(--mut)",marginTop:2}},"Día "+(adiaIdx+1)+" de "+adminDias.length+" · "+fmDia.length+(fmDia.length===1?" partido":" partidos")+(adiaActual===adminHoyKey?" · HOY":""))
+        ),
+        React.createElement("button",{onClick:function(){if(adiaIdx<adminDias.length-1)setAdiaIdx(adiaIdx+1);},disabled:adiaIdx===adminDias.length-1,
+          style:{width:44,height:44,flexShrink:0,borderRadius:10,border:"1px solid var(--b)",background:"var(--s)",color:adiaIdx===adminDias.length-1?"var(--mut)":"var(--red)",fontSize:22,cursor:adiaIdx===adminDias.length-1?"default":"pointer",opacity:adiaIdx===adminDias.length-1?0.4:1}},"›")
+      ),
+      adiaActual!==adminHoyKey&&adminDias.indexOf(adminHoyKey)>=0&&React.createElement("button",{
+        onClick:function(){setAdiaIdx(adminDias.indexOf(adminHoyKey));},
+        style:{width:"100%",marginBottom:14,padding:"8px",borderRadius:8,border:"1px solid var(--red)",background:"transparent",color:"var(--red)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",textTransform:"uppercase",letterSpacing:1}},"⚽ Volver a hoy"),
+      fmDia.map(function(m){
         var ex=p.results[m.id];
         var hv=lr[m.id+"h"]!==undefined?lr[m.id+"h"]:(ex?ex.home:"");
         var av=lr[m.id+"a"]!==undefined?lr[m.id+"a"]:(ex?ex.away:"");
