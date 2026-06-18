@@ -305,11 +305,18 @@ function App(){
     // Partidos finalizados con resultado, ordenados cronológicamente
     var jugados=MATCHES.filter(function(m){return results[m.id];})
       .sort(function(a,b){return new Date(a.kickoff)-new Date(b.kickoff);});
+    // Última jornada con resultados cargados (la fecha más reciente jugada)
+    var ultJornada=jugados.length>0?jornada(jugados[jugados.length-1].kickoff):null;
+    var partidosUltJornada=ultJornada?jugados.filter(function(m){return jornada(m.kickoff)===ultJornada;}):[];
     return players.map(function(p){
       var base=MATCHES.reduce(function(acc,m){
         return acc+pts(preds[m.id]&&preds[m.id][p.id],results[m.id]);
       },0);
       var champBonus=(champion&&champs[p.id]&&champs[p.id].team===champion)?CHAMP_PTS:0;
+      // Puntos de la última jornada
+      var ptsDia=partidosUltJornada.reduce(function(acc,m){
+        return acc+pts(preds[m.id]&&preds[m.id][p.id],results[m.id]);
+      },0);
       // Calcular racha: recorrer partidos jugados desde el último hacia atrás
       var racha=0,tipo=null;
       for(var i=jugados.length-1;i>=0;i--){
@@ -321,7 +328,7 @@ function App(){
         else if((tipo==="hot")===acierto){racha++;}
         else break;
       }
-      return Object.assign({},p,{total:base+champBonus,champBonus:champBonus,racha:racha,rachaTipo:tipo});
+      return Object.assign({},p,{total:base+champBonus,champBonus:champBonus,ptsDia:ptsDia,racha:racha,rachaTipo:tipo});
     }).sort(function(a,b){return b.total-a.total;});
   }
 
@@ -578,6 +585,7 @@ function Table(p){
           pl.champBonus>0&&React.createElement("span",{style:{marginLeft:4}},"🏆"),
           pl.racha>=3&&React.createElement("span",{style:{marginLeft:6,fontSize:12,fontWeight:700,color:pl.rachaTipo==="hot"?"var(--red)":"#5aa9e6"}},(pl.rachaTipo==="hot"?"🔥":"❄️")+"x"+pl.racha),
           pl.id===p.user.id&&React.createElement("span",{style:{color:"var(--acc)",fontSize:10,marginLeft:6}},"← vos")),
+        p.lb.some(function(x){return x.ptsDia>0;})&&React.createElement("span",{style:{fontSize:11,fontWeight:700,marginRight:10,padding:"2px 7px",borderRadius:20,color:pl.ptsDia>0?"var(--grn)":"var(--mut)",background:pl.ptsDia>0?"rgba(34,197,94,0.12)":"var(--s2)"}},"+"+pl.ptsDia+" hoy"),
         React.createElement("div",{style:{textAlign:"right"}},
           React.createElement("div",{className:"lbpts"},pl.total),
           React.createElement("div",{style:{fontSize:10,color:"var(--mut)"}},"pts"))
