@@ -29,6 +29,7 @@ firebase.initializeApp({
 var DB = firebase.database();
 function fbGet(p){return DB.ref(p).get().then(function(s){return s.val();})}
 function fbSet(p,v){return DB.ref(p).set(v)}
+function fbDel(p){return DB.ref(p).remove()}
 function fbOn(p,cb){var r=DB.ref(p);r.on('value',function(s){cb(s.val());});return function(){r.off();}}
 </script>
 
@@ -122,6 +123,41 @@ var MATCHES=[
   {id:"m070",home:"RD Congo",away:"Uzbekistán",kickoff:"2026-06-27T20:30:00",group:"Grupo K",venue:"Atlanta"},
   {id:"m071",home:"Argelia",away:"Austria",kickoff:"2026-06-27T23:00:00",group:"Grupo J",venue:"Kansas City"},
   {id:"m072",home:"Jordania",away:"Argentina",kickoff:"2026-06-27T23:00:00",group:"Grupo J",venue:"Dallas"}
+];
+
+var KO_TEMPLATE=[
+  {id:"ko73",n:73,inst:"16avos",kickoff:"2026-06-29T17:30:00",defHome:"Ganador grupo E",defAway:"3º Grupo A/B/C/D/F"},
+  {id:"ko74",n:74,inst:"16avos",kickoff:"2026-06-30T18:00:00",defHome:"Ganador grupo I",defAway:"3º Grupo C/D/F/G/H"},
+  {id:"ko75",n:75,inst:"16avos",kickoff:"2026-06-28T16:00:00",defHome:"Subcampeón grupo A",defAway:"Subcampeón grupo B"},
+  {id:"ko76",n:76,inst:"16avos",kickoff:"2026-06-29T22:00:00",defHome:"Ganador grupo F",defAway:"Subcampeón grupo C"},
+  {id:"ko77",n:77,inst:"16avos",kickoff:"2026-07-02T20:00:00",defHome:"Subcampeón grupo K",defAway:"Subcampeón grupo L"},
+  {id:"ko78",n:78,inst:"16avos",kickoff:"2026-07-02T16:00:00",defHome:"Ganador grupo H",defAway:"Subcampeón grupo J"},
+  {id:"ko79",n:79,inst:"16avos",kickoff:"2026-07-01T21:00:00",defHome:"Ganador grupo D",defAway:"3º Grupo B/E/F/I/J"},
+  {id:"ko80",n:80,inst:"16avos",kickoff:"2026-07-01T17:00:00",defHome:"Ganador grupo G",defAway:"3º Grupo A/E/H/I/J"},
+  {id:"ko81",n:81,inst:"16avos",kickoff:"2026-06-29T14:00:00",defHome:"Ganador grupo C",defAway:"Subcampeón grupo F"},
+  {id:"ko82",n:82,inst:"16avos",kickoff:"2026-06-30T14:00:00",defHome:"Subcampeón grupo E",defAway:"Subcampeón grupo I"},
+  {id:"ko83",n:83,inst:"16avos",kickoff:"2026-06-30T22:00:00",defHome:"Ganador grupo A",defAway:"3º Grupo C/E/F/H/I"},
+  {id:"ko84",n:84,inst:"16avos",kickoff:"2026-07-01T13:00:00",defHome:"Ganador grupo L",defAway:"3º Grupo E/H/I/J/K"},
+  {id:"ko85",n:85,inst:"16avos",kickoff:"2026-07-03T19:00:00",defHome:"Ganador grupo J",defAway:"Subcampeón grupo H"},
+  {id:"ko86",n:86,inst:"16avos",kickoff:"2026-07-03T15:00:00",defHome:"Subcampeón grupo D",defAway:"Subcampeón grupo G"},
+  {id:"ko87",n:87,inst:"16avos",kickoff:"2026-07-03T00:00:00",defHome:"Ganador grupo B",defAway:"3º Grupo E/F/G/I/J"},
+  {id:"ko88",n:88,inst:"16avos",kickoff:"2026-07-03T22:30:00",defHome:"Ganador grupo K",defAway:"3º Grupo D/E/I/J/L"},
+  {id:"ko89",n:89,inst:"8vos",kickoff:"2026-07-04T18:00:00",defHome:"Ganador 74",defAway:"Ganador 77"},
+  {id:"ko90",n:90,inst:"8vos",kickoff:"2026-07-04T14:00:00",defHome:"Ganador 73",defAway:"Ganador 75"},
+  {id:"ko91",n:91,inst:"8vos",kickoff:"2026-07-06T16:00:00",defHome:"Ganador 83",defAway:"Ganador 84"},
+  {id:"ko92",n:92,inst:"8vos",kickoff:"2026-07-06T21:00:00",defHome:"Ganador 81",defAway:"Ganador 82"},
+  {id:"ko93",n:93,inst:"8vos",kickoff:"2026-07-05T17:00:00",defHome:"Ganador 76",defAway:"Ganador 78"},
+  {id:"ko94",n:94,inst:"8vos",kickoff:"2026-07-05T21:00:00",defHome:"Ganador 79",defAway:"Ganador 80"},
+  {id:"ko95",n:95,inst:"8vos",kickoff:"2026-07-07T13:00:00",defHome:"Ganador 86",defAway:"Ganador 88"},
+  {id:"ko96",n:96,inst:"8vos",kickoff:"2026-07-07T17:00:00",defHome:"Ganador 85",defAway:"Ganador 87"},
+  {id:"ko97",n:97,inst:"Cuartos",kickoff:"2026-07-09T17:00:00",defHome:"Ganador 89",defAway:"Ganador 90"},
+  {id:"ko98",n:98,inst:"Cuartos",kickoff:"2026-07-10T16:00:00",defHome:"Ganador 93",defAway:"Ganador 94"},
+  {id:"ko99",n:99,inst:"Cuartos",kickoff:"2026-07-11T18:00:00",defHome:"Ganador 91",defAway:"Ganador 92"},
+  {id:"ko100",n:100,inst:"Cuartos",kickoff:"2026-07-11T22:00:00",defHome:"Ganador 95",defAway:"Ganador 96"},
+  {id:"ko101",n:101,inst:"Semifinal",kickoff:"2026-07-14T16:00:00",defHome:"Ganador 97",defAway:"Ganador 98"},
+  {id:"ko102",n:102,inst:"Semifinal",kickoff:"2026-07-15T16:00:00",defHome:"Ganador 99",defAway:"Ganador 100"},
+  {id:"ko103",n:103,inst:"3er puesto",kickoff:"2026-07-18T18:00:00",defHome:"Perdedor 101",defAway:"Perdedor 102"},
+  {id:"ko104",n:104,inst:"FINAL",kickoff:"2026-07-19T16:00:00",defHome:"Ganador 101",defAway:"Ganador 102"}
 ];
 
 var ADMIN="admin2026";
@@ -263,6 +299,7 @@ function App(){
   var _ck=s(0),clock=_ck[0],setClock=_ck[1];
   var _ch=s({}),champs=_ch[0],setChamps=_ch[1];
   var _cr=s(null),champion=_cr[0],setChampion=_cr[1];
+  var _km=s([]),koMatches=_km[0],setKoMatches=_km[1];
   var _th=s(localStorage.getItem("prode_theme")||"dark"),theme=_th[0],setTheme=_th[1];
 
   e(function(){
@@ -286,8 +323,9 @@ function App(){
     var o3=fbOn("players",function(v){if(v)setPlayers(Object.values(v));});
     var o4=fbOn("champs",function(v){setChamps(v||{});});
     var o5=fbOn("champion",function(v){setChampion(v||null);});
+    var o6=fbOn("koMatches",function(v){setKoMatches(v?Object.values(v):[]);});
     var tick=setInterval(function(){setClock(function(c){return c+1;});},30000);
-    return function(){o1();o2();o3();o4();o5();clearInterval(tick);};
+    return function(){o1();o2();o3();o4();o5();o6();clearInterval(tick);};
   },[]);
 
   function showToast(m){setToast(m);setTimeout(function(){setToast("");},2500);}
@@ -303,13 +341,13 @@ function App(){
   function lb(){
     if(!players) return [];
     // Partidos finalizados con resultado, ordenados cronológicamente
-    var jugados=MATCHES.filter(function(m){return results[m.id];})
+    var jugados=(window.ALL_MATCHES||MATCHES).filter(function(m){return results[m.id];})
       .sort(function(a,b){return new Date(a.kickoff)-new Date(b.kickoff);});
     // Última jornada con resultados cargados (la fecha más reciente jugada)
     var ultJornada=jugados.length>0?jornada(jugados[jugados.length-1].kickoff):null;
     var partidosUltJornada=ultJornada?jugados.filter(function(m){return jornada(m.kickoff)===ultJornada;}):[];
     return players.map(function(p){
-      var base=MATCHES.reduce(function(acc,m){
+      var base=(window.ALL_MATCHES||MATCHES).reduce(function(acc,m){
         return acc+pts(preds[m.id]&&preds[m.id][p.id],results[m.id]);
       },0);
       var champBonus=(champion&&champs[p.id]&&champs[p.id].team===champion)?CHAMP_PTS:0;
@@ -336,16 +374,19 @@ function App(){
   if(!user) return React.createElement(React.Fragment,null,React.createElement("style",null,CSS),React.createElement(Login,{onLogin:login}));
   var isAdmin=user.id==="admin";
 
+  // Array combinado: grupos (hardcodeados) + eliminatoria (de Firebase)
+  window.ALL_MATCHES=MATCHES.concat(koMatches);
+
   return React.createElement(React.Fragment,null,
     React.createElement("style",null,CSS),
     React.createElement("div",{className:"app"},
       React.createElement(Hdr,{user:user,isAdmin:isAdmin,theme:theme,onToggleTheme:function(){setTheme(theme==="dark"?"light":"dark");},onLogout:function(){setUser(null);}}),
       isAdmin
-        ? React.createElement(Admin,{players:players,preds:preds,results:results,champs:champs,champion:champion,showToast:showToast})
+        ? React.createElement(Admin,{players:players,preds:preds,results:results,champs:champs,champion:champion,koMatches:koMatches,showToast:showToast})
         : React.createElement(React.Fragment,null,
-            tab==="matches"&&React.createElement(Matches,{preds:preds,results:results,user:user,players:players,champs:champs,showToast:showToast}),
+            tab==="matches"&&React.createElement(Matches,{preds:preds,results:results,user:user,players:players,champs:champs,koMatches:koMatches,showToast:showToast}),
             tab==="table"&&React.createElement(Table,{lb:lb(),user:user}),
-            tab==="stats"&&React.createElement(Stats,{preds:preds,results:results,user:user,players:players}),
+            tab==="stats"&&React.createElement(Stats,{preds:preds,results:results,user:user,players:players,koMatches:koMatches}),
             React.createElement("nav",{className:"bnav"},
               [{id:"matches",i:"⚽",l:"Partidos"},{id:"table",i:"🏆",l:"Tabla"},{id:"stats",i:"📊",l:"Stats"}].map(function(t){
                 return React.createElement("button",{key:t.id,className:"bi"+(tab===t.id?" on":""),onClick:function(){setTab(t.id);}},
@@ -397,7 +438,7 @@ function Matches(p){
   var _ex=useState({}),expanded=_ex[0],setExpanded=_ex[1];
   // Días únicos del torneo (por jornada FIFA), ordenados
   var dias=[];
-  MATCHES.forEach(function(m){var j=jornada(m.kickoff);if(dias.indexOf(j)<0)dias.push(j);});
+  (window.ALL_MATCHES||MATCHES).forEach(function(m){var j=jornada(m.kickoff);if(dias.indexOf(j)<0)dias.push(j);});
   dias.sort();
   // Día actual por jornada; si hoy no tiene partidos, ir al próximo día con partidos
   var hoyKey=jornada(new Date().toISOString());
@@ -408,10 +449,10 @@ function Matches(p){
   }
   var _di=useState(idxInicial),diaIdx=_di[0],setDiaIdx=_di[1];
   var diaActual=dias[diaIdx];
-  var filtered=MATCHES.filter(function(m){return jornada(m.kickoff)===diaActual;});
+  var filtered=(window.ALL_MATCHES||MATCHES).filter(function(m){return jornada(m.kickoff)===diaActual;});
 
   function save(mid){
-    var match=MATCHES.find(function(x){return x.id===mid;});
+    var match=(window.ALL_MATCHES||MATCHES).find(function(x){return x.id===mid;});
     if(!match||status(match.kickoff)!=="upcoming"){
       p.showToast("🔒 Este partido ya cerró");
       return;
@@ -595,7 +636,7 @@ function Table(p){
 }
 
 function calcStats(preds,results,uid){
-  var played=MATCHES.filter(function(m){return results[m.id];});
+  var played=(window.ALL_MATCHES||MATCHES).filter(function(m){return results[m.id];});
   var mine=played.filter(function(m){return preds[m.id]&&preds[m.id][uid];});
   var exact=mine.filter(function(m){return pts(preds[m.id][uid],results[m.id])===6;}).length;
   var part=mine.filter(function(m){return pts(preds[m.id][uid],results[m.id])===3;}).length;
@@ -614,7 +655,7 @@ function calcStats(preds,results,uid){
 
 function Stats(p){
   var _rv=useState(""),rivalSel=_rv[0],setRivalSel=_rv[1];
-  var played=MATCHES.filter(function(m){return p.results[m.id];});
+  var played=(window.ALL_MATCHES||MATCHES).filter(function(m){return p.results[m.id];});
   var stats=calcStats(p.preds,p.results,p.user.id);
   // Head to Head
   var rivales=(p.players||[]).filter(function(pl){return pl.id!==p.user.id;});
@@ -694,21 +735,31 @@ function Admin(p){
   var _nt=useState(""),nt=_nt[0],setNt=_nt[1];
   var _ca=useState(""),champSelAdmin=_ca[0],setChampSelAdmin=_ca[1];
   var _aex=useState({}),aexp=_aex[0],setAexp=_aex[1];
+  // Eliminatoria: ediciones temporales de equipos por partido
+  var _ke=useState({}),koEdits=_ke[0],setKoEdits=_ke[1];
+  function setKoEdit(id,field,val){
+    setKoEdits(function(prev){
+      var n=Object.assign({},prev);
+      n[id]=Object.assign({},n[id]);
+      n[id][field]=val;
+      return n;
+    });
+  }
 
   var groups=["Todos","Grupo A","Grupo B","Grupo C","Grupo D","Grupo E","Grupo F","Grupo G","Grupo H","Grupo I","Grupo J","Grupo K","Grupo L"];
-  var fm=grp==="Todos"?MATCHES:MATCHES.filter(function(m){return m.group===grp;});
+  var fm=grp==="Todos"?(window.ALL_MATCHES||MATCHES):(window.ALL_MATCHES||MATCHES).filter(function(m){return m.group===grp;});
   var BASE=window.location.href.split("?")[0];
 
   // Navegador de días para cargar resultados
   var adminDias=[];
-  MATCHES.forEach(function(m){var j=jornada(m.kickoff);if(adminDias.indexOf(j)<0)adminDias.push(j);});
+  (window.ALL_MATCHES||MATCHES).forEach(function(m){var j=jornada(m.kickoff);if(adminDias.indexOf(j)<0)adminDias.push(j);});
   adminDias.sort();
   var adminHoyKey=jornada(new Date().toISOString());
   var adminIdxIni=adminDias.indexOf(adminHoyKey);
   if(adminIdxIni<0){adminIdxIni=0;for(var ai=0;ai<adminDias.length;ai++){if(adminDias[ai]>=adminHoyKey){adminIdxIni=ai;break;}if(ai===adminDias.length-1)adminIdxIni=ai;}}
   var _adi=useState(adminIdxIni),adiaIdx=_adi[0],setAdiaIdx=_adi[1];
   var adiaActual=adminDias[adiaIdx];
-  var fmDia=MATCHES.filter(function(m){return jornada(m.kickoff)===adiaActual;});
+  var fmDia=(window.ALL_MATCHES||MATCHES).filter(function(m){return jornada(m.kickoff)===adiaActual;});
 
   function saveRes(mid){
     var h=lr[mid+"h"],a=lr[mid+"a"];
@@ -733,7 +784,7 @@ function Admin(p){
     fbSet("players",obj).then(function(){setNn("");setNt("");p.showToast("✅ "+newP.name+" agregado");});
   }
 
-  var tabs=[{id:"results",l:"Resultados"},{id:"links",l:"Links"},{id:"all",l:"Pronósticos"},{id:"add",l:"+ Jugador"}];
+  var tabs=[{id:"results",l:"Resultados"},{id:"ko",l:"🏆 Eliminat."},{id:"links",l:"Links"},{id:"all",l:"Pronósticos"},{id:"add",l:"+ Jugador"}];
 
   return React.createElement("div",{className:"sec"},
     React.createElement("div",{style:{display:"flex",gap:5,margin:"12px 0",flexWrap:"wrap"}},
@@ -796,6 +847,55 @@ function Admin(p){
         );
       })
     ),
+
+    at==="ko"&&React.createElement(React.Fragment,null,
+      React.createElement("div",{className:"stit",style:{color:"var(--gld)"}},"🏆 Eliminatoria"),
+      React.createElement("div",{style:{fontSize:11,color:"var(--mut)",marginBottom:14,lineHeight:1.5}},"Las fechas y horarios ya están cargados. Cuando se definan los cruces, elegí los equipos de cada partido y apretá Activar. El partido aparece para todos recién cuando lo activás."),
+      ["16avos","8vos","Cuartos","Semifinal","3er puesto","FINAL"].map(function(inst){
+        var parts=KO_TEMPLATE.filter(function(t){return t.inst===inst;});
+        return React.createElement("div",{key:inst,style:{marginBottom:18}},
+          React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:17,letterSpacing:1,color:"var(--gld)",marginBottom:8,borderBottom:"1px solid var(--b)",paddingBottom:4}},"🏆 "+inst),
+          parts.map(function(t){
+            var existing=(p.koMatches||[]).find(function(k){return k.id===t.id;});
+            var curHome=koEdits[t.id]&&koEdits[t.id].home!==undefined?koEdits[t.id].home:(existing?existing.home:"");
+            var curAway=koEdits[t.id]&&koEdits[t.id].away!==undefined?koEdits[t.id].away:(existing?existing.away:"");
+            return React.createElement("div",{key:t.id,className:"ac",style:existing?{border:"1px solid var(--grn)"}:{}},
+              React.createElement("div",{style:{fontSize:11,color:"var(--mut)",marginBottom:7,display:"flex",justifyContent:"space-between"}},
+                React.createElement("span",null,"Partido "+t.n),
+                React.createElement("span",null,fmt(t.kickoff))
+              ),
+              React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center",marginBottom:7}},
+                React.createElement("select",{value:curHome,onChange:function(e){setKoEdit(t.id,"home",e.target.value);},
+                  style:{flex:1,padding:"8px 9px",background:"var(--s2)",border:"2px solid var(--b)",borderRadius:7,color:"var(--txt)",fontFamily:"'DM Sans',sans-serif",fontSize:13,outline:"none"}},
+                  React.createElement("option",{value:""},t.defHome),
+                  TEAMS_48.map(function(x){return React.createElement("option",{key:x,value:x},flag(x)+" "+x);})
+                ),
+                React.createElement("span",{style:{fontSize:11,color:"var(--mut)"}},"vs"),
+                React.createElement("select",{value:curAway,onChange:function(e){setKoEdit(t.id,"away",e.target.value);},
+                  style:{flex:1,padding:"8px 9px",background:"var(--s2)",border:"2px solid var(--b)",borderRadius:7,color:"var(--txt)",fontFamily:"'DM Sans',sans-serif",fontSize:13,outline:"none"}},
+                  React.createElement("option",{value:""},t.defAway),
+                  TEAMS_48.map(function(x){return React.createElement("option",{key:x,value:x},flag(x)+" "+x);})
+                )
+              ),
+              React.createElement("div",{style:{display:"flex",gap:6}},
+                React.createElement("button",{className:"cbtn",style:{flex:1,marginTop:0,padding:"8px",background:existing?"var(--grn)":"var(--gld)",color:"#000"},onClick:function(){
+                  if(!curHome||!curAway){p.showToast("⚠️ Elegí los dos equipos");return;}
+                  if(curHome===curAway){p.showToast("⚠️ No pueden ser el mismo país");return;}
+                  fbSet("koMatches/"+t.id,{id:t.id,home:curHome,away:curAway,kickoff:t.kickoff,group:"🏆 "+t.inst,venue:t.inst,ko:true});
+                  p.showToast(existing?"✏️ Cruce actualizado":"🏆 "+curHome+" vs "+curAway+" activado");
+                }},existing?"Actualizar":"Activar"),
+                existing&&React.createElement("button",{className:"neb",style:{background:"var(--red)",color:"#fff",padding:"8px 12px"},onClick:function(){
+                  if(confirm("¿Desactivar este cruce? Se pierden los pronósticos que hayan cargado.")){
+                    fbDel("koMatches/"+t.id);p.showToast("Cruce desactivado");
+                  }
+                }},"🗑")
+              )
+            );
+          })
+        );
+      })
+    ),
+
 
     at==="links"&&React.createElement(React.Fragment,null,
       React.createElement("div",{className:"stit",style:{color:"var(--red)"}},"Links de jugadores"),
