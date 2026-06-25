@@ -432,6 +432,36 @@ function Hdr(p){
   );
 }
 
+// Trofeo SVG propio (original, coloreable por ronda)
+function Trofeo(props){
+  var fill=props.fill||"url(#gradBronce)";
+  var w=props.w||15, h=props.h||20;
+  return React.createElement("svg",{width:w,height:h,viewBox:"0 0 48 64",style:{display:"inline-block",verticalAlign:"middle"}},
+    React.createElement("path",{d:"M12,12 C3,12 3,26 15,27.5",fill:"none",stroke:fill,strokeWidth:3.2}),
+    React.createElement("path",{d:"M36,12 C45,12 45,26 33,27.5",fill:"none",stroke:fill,strokeWidth:3.2}),
+    React.createElement("path",{d:"M11,8 L37,8 C37,25 31,34 24,34 C17,34 11,25 11,8 Z",fill:fill}),
+    React.createElement("rect",{x:21.5,y:33,width:5,height:9,fill:fill}),
+    React.createElement("path",{d:"M16,42 L32,42 L35,51 L13,51 Z",fill:fill}),
+    React.createElement("rect",{x:10.5,y:51,width:27,height:5.5,rx:1.6,fill:fill})
+  );
+}
+// Config visual por instancia de eliminatoria (se irá ampliando ronda por ronda)
+var KO_STYLE={
+  "16avos":{label:"16avos de final",grad:"linear-gradient(135deg,#c98a52,#8a5226)"}
+};
+// Devuelve la instancia "más avanzada" presente en una lista de partidos (o null)
+function instanciaDelDia(list){
+  var orden=["16avos","8vos","Cuartos","Semifinal","3er puesto","FINAL"];
+  var found=null,foundIdx=-1;
+  list.forEach(function(m){
+    if(m.venue&&orden.indexOf(m.venue)>=0){
+      var idx=orden.indexOf(m.venue);
+      if(idx>foundIdx){foundIdx=idx;found=m.venue;}
+    }
+  });
+  return found;
+}
+
 function Matches(p){
   var _l=useState({}),local=_l[0],setLocal=_l[1];
   var _s=useState({}),saved=_s[0],setSaved=_s[1];
@@ -513,6 +543,25 @@ function Matches(p){
         )
       )
     ),
+    (function(){
+      var inst=instanciaDelDia(filtered);
+      if(!inst||!KO_STYLE[inst]) return null;
+      var st=KO_STYLE[inst];
+      return React.createElement("div",{key:"insignia",style:{textAlign:"center",marginBottom:12}},
+        React.createElement("svg",{width:0,height:0,style:{position:"absolute"}},
+          React.createElement("defs",null,
+            React.createElement("linearGradient",{id:"gradBronce",x1:0,y1:0,x2:0,y2:1},
+              React.createElement("stop",{offset:0,stopColor:"#e2a877"}),
+              React.createElement("stop",{offset:1,stopColor:"#8a5226"})
+            )
+          )
+        ),
+        React.createElement("span",{style:{display:"inline-flex",alignItems:"center",gap:7,background:st.grad,color:"#fff",fontFamily:"'Bebas Neue',sans-serif",fontSize:15,letterSpacing:2,padding:"6px 16px 6px 12px",borderRadius:22,boxShadow:"0 3px 8px rgba(140,80,40,.35)"}},
+          React.createElement(Trofeo,{fill:"#fff",w:15,h:20}),
+          st.label.toUpperCase()
+        )
+      );
+    })(),
     React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:14}},
       React.createElement("button",{
         onClick:function(){if(diaIdx>0)setDiaIdx(diaIdx-1);},
