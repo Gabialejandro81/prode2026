@@ -466,6 +466,7 @@ function Matches(p){
   var _l=useState({}),local=_l[0],setLocal=_l[1];
   var _s=useState({}),saved=_s[0],setSaved=_s[1];
   var _ex=useState({}),expanded=_ex[0],setExpanded=_ex[1];
+  var _chO=useState(false),champOpenUI=_chO[0],setChampOpenUI=_chO[1];
   // Días únicos del torneo (por jornada FIFA), ordenados
   var dias=[];
   (window.ALL_MATCHES||MATCHES).forEach(function(m){var j=jornada(m.kickoff);if(dias.indexOf(j)<0)dias.push(j);});
@@ -509,37 +510,47 @@ function Matches(p){
   }
   return React.createElement("div",{className:"sec"},
     React.createElement("div",{className:"mc",style:{border:"1px solid var(--gld)",background:"var(--champg)"}},
-      React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:17,letterSpacing:1.5,color:"var(--gld)",marginBottom:4}},"🏆 ¿Quién va a ser campeón?"),
-      React.createElement("div",{style:{fontSize:11,color:"var(--mut)",marginBottom:10}},
+      React.createElement("button",{
+        onClick:function(){setChampOpenUI(!champOpenUI);},
+        style:{width:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",padding:0,color:"var(--txt)"}},
+        React.createElement("div",{style:{textAlign:"left"}},
+          React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:17,letterSpacing:1.5,color:"var(--gld)"}},"🏆 ¿Quién va a ser campeón?"),
+          React.createElement("div",{style:{fontSize:11,color:"var(--mut)",marginTop:2}},
+            (champOpen
+              ? "Vale "+CHAMP_PTS+" pts · hasta el 27/06 23:59"
+              : "Cerrado · Valía "+CHAMP_PTS+" pts")
+            +(myChamp?" · Tu campeón: "+flag(myChamp.team)+" "+myChamp.team:(champOpen?" · sin elegir":"")))
+        ),
+        React.createElement("span",{style:{fontSize:14,color:"var(--gld)",marginLeft:8}},champOpenUI?"▲":"▼")
+      ),
+      champOpenUI&&React.createElement("div",{style:{marginTop:12}},
         champOpen
-          ? "Vale "+CHAMP_PTS+" pts · Podés cambiarlo hasta el 27/06 a las 23:59"
-          : "Cerrado · Valía "+CHAMP_PTS+" pts"),
-      champOpen
-        ? React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
-            React.createElement("select",{
-              value:champSel||(myChamp?myChamp.team:""),
-              onChange:function(e){setChampSel(e.target.value);},
-              style:{flex:1,padding:"10px 12px",background:"var(--s2)",border:"2px solid var(--b)",borderRadius:8,color:"var(--txt)",fontFamily:"'DM Sans',sans-serif",fontSize:14,outline:"none"}},
-              React.createElement("option",{value:""},"— Elegí un país —"),
-              TEAMS_48.map(function(t){return React.createElement("option",{key:t,value:t},flag(t)+" "+t);})
-            ),
-            React.createElement("button",{className:"sbtn",style:{flex:"none",padding:"10px 16px"},onClick:saveChamp},myChamp?"Cambiar":"Guardar")
+          ? React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
+              React.createElement("select",{
+                value:champSel||(myChamp?myChamp.team:""),
+                onChange:function(e){setChampSel(e.target.value);},
+                style:{flex:1,padding:"10px 12px",background:"var(--s2)",border:"2px solid var(--b)",borderRadius:8,color:"var(--txt)",fontFamily:"'DM Sans',sans-serif",fontSize:14,outline:"none"}},
+                React.createElement("option",{value:""},"— Elegí un país —"),
+                TEAMS_48.map(function(t){return React.createElement("option",{key:t,value:t},flag(t)+" "+t);})
+              ),
+              React.createElement("button",{className:"sbtn",style:{flex:"none",padding:"10px 16px"},onClick:saveChamp},myChamp?"Cambiar":"Guardar")
+            )
+          : null,
+        myChamp&&React.createElement("div",{style:{marginTop:8,fontSize:13,color:"var(--grn)",fontWeight:600}},"Tu campeón: "+flag(myChamp.team)+" "+myChamp.team),
+        !champOpen&&!myChamp&&React.createElement("div",{style:{fontSize:12,color:"var(--red)",fontWeight:600}},"No elegiste campeón 🔒"),
+        !champOpen&&p.players&&React.createElement("div",{style:{marginTop:10}},
+          React.createElement("div",{style:{fontSize:10,color:"var(--mut)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}},"Campeones del grupo"),
+          React.createElement("div",{className:"pg"},
+            p.players.map(function(pl){
+              var ch=p.champs&&p.champs[pl.id];
+              var isMe=pl.id===p.user.id;
+              return React.createElement("div",{key:pl.id,className:"pgi",style:isMe?{border:"1px solid var(--gld)"}:{}},
+                React.createElement("div",{className:"pgn"},isMe?"⭐ "+pl.name:pl.name),
+                ch?React.createElement("div",{style:{fontSize:13,fontWeight:600}},flag(ch.team)+" "+ch.team)
+                  :React.createElement("div",{style:{fontSize:12,color:"var(--mut)"}},"-")
+              );
+            })
           )
-        : null,
-      myChamp&&React.createElement("div",{style:{marginTop:8,fontSize:13,color:"var(--grn)",fontWeight:600}},"Tu campeón: "+flag(myChamp.team)+" "+myChamp.team),
-      !champOpen&&!myChamp&&React.createElement("div",{style:{fontSize:12,color:"var(--red)",fontWeight:600}},"No elegiste campeón 🔒"),
-      !champOpen&&p.players&&React.createElement("div",{style:{marginTop:10}},
-        React.createElement("div",{style:{fontSize:10,color:"var(--mut)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}},"Campeones del grupo"),
-        React.createElement("div",{className:"pg"},
-          p.players.map(function(pl){
-            var ch=p.champs&&p.champs[pl.id];
-            var isMe=pl.id===p.user.id;
-            return React.createElement("div",{key:pl.id,className:"pgi",style:isMe?{border:"1px solid var(--gld)"}:{}},
-              React.createElement("div",{className:"pgn"},isMe?"⭐ "+pl.name:pl.name),
-              ch?React.createElement("div",{style:{fontSize:13,fontWeight:600}},flag(ch.team)+" "+ch.team)
-                :React.createElement("div",{style:{fontSize:12,color:"var(--mut)"}},"-")
-            );
-          })
         )
       )
     ),
