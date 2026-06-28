@@ -480,7 +480,7 @@ function Matches(p){
   }
   var _di=useState(idxInicial),diaIdx=_di[0],setDiaIdx=_di[1];
   var diaActual=dias[diaIdx];
-  var filtered=(window.ALL_MATCHES||MATCHES).filter(function(m){return jornada(m.kickoff)===diaActual;});
+  var filtered=(window.ALL_MATCHES||MATCHES).filter(function(m){return jornada(m.kickoff)===diaActual;}).sort(function(a,b){return (new Date(a.kickoff).getTime()-5*3600000)-(new Date(b.kickoff).getTime()-5*3600000);});
 
   function save(mid){
     var match=(window.ALL_MATCHES||MATCHES).find(function(x){return x.id===mid;});
@@ -819,7 +819,7 @@ function Admin(p){
   if(adminIdxIni<0){adminIdxIni=0;for(var ai=0;ai<adminDias.length;ai++){if(adminDias[ai]>=adminHoyKey){adminIdxIni=ai;break;}if(ai===adminDias.length-1)adminIdxIni=ai;}}
   var _adi=useState(adminIdxIni),adiaIdx=_adi[0],setAdiaIdx=_adi[1];
   var adiaActual=adminDias[adiaIdx];
-  var fmDia=(window.ALL_MATCHES||MATCHES).filter(function(m){return jornada(m.kickoff)===adiaActual;});
+  var fmDia=(window.ALL_MATCHES||MATCHES).filter(function(m){return jornada(m.kickoff)===adiaActual;}).sort(function(a,b){return (new Date(a.kickoff).getTime()-5*3600000)-(new Date(b.kickoff).getTime()-5*3600000);});
 
   function saveRes(mid){
     var h=lr[mid+"h"],a=lr[mid+"a"];
