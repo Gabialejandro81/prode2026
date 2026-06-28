@@ -434,7 +434,7 @@ function Hdr(p){
 
 // Trofeo SVG propio (original, coloreable por ronda)
 function Trofeo(props){
-  var fill=props.fill||"url(#gradBronce)";
+  var fill=props.fill||"#cd8a4e";
   var w=props.w||15, h=props.h||20;
   return React.createElement("svg",{width:w,height:h,viewBox:"0 0 48 64",style:{display:"inline-block",verticalAlign:"middle"}},
     React.createElement("path",{d:"M12,12 C3,12 3,26 15,27.5",fill:"none",stroke:fill,strokeWidth:3.2}),
@@ -445,9 +445,15 @@ function Trofeo(props){
     React.createElement("rect",{x:10.5,y:51,width:27,height:5.5,rx:1.6,fill:fill})
   );
 }
-// Config visual por instancia de eliminatoria (se irá ampliando ronda por ronda)
+// Config visual por instancia de eliminatoria. Cada una: label, gradiente de fondo,
+// color del trofeo (tro) y del texto (txt). La progresión sube la épica ronda a ronda.
 var KO_STYLE={
-  "16avos":{label:"16avos de final",grad:"linear-gradient(135deg,#c98a52,#8a5226)"}
+  "16avos":{label:"16avos de final",grad:"linear-gradient(135deg,#b57842,#6e3f1c)",tro:"#fff",txt:"#fff"},
+  "8vos":{label:"Octavos de final",grad:"linear-gradient(135deg,#f0913e,#c2531a)",tro:"#fff",txt:"#fff"},
+  "Cuartos":{label:"Cuartos de final",grad:"linear-gradient(135deg,#b8bfca,#7c8696)",tro:"#39414f",txt:"#2a3142"},
+  "Semifinal":{label:"Semifinal",grad:"linear-gradient(135deg,#f4f9ff,#9fc0dc)",tro:"#1f3247",txt:"#1f3247"},
+  "3er puesto":{label:"3er puesto",grad:"linear-gradient(135deg,#e0b34e,#a9742a)",tro:"#fff",txt:"#fff"},
+  "FINAL":{label:"La Final",grad:"linear-gradient(135deg,#ffe07a,#d99e1a)",tro:"#5a3d00",txt:"#5a3d00"}
 };
 // Devuelve la instancia "más avanzada" presente en una lista de partidos (o null)
 function instanciaDelDia(list){
@@ -558,17 +564,10 @@ function Matches(p){
       var inst=instanciaDelDia(filtered);
       if(!inst||!KO_STYLE[inst]) return null;
       var st=KO_STYLE[inst];
+      var esFinal=inst==="FINAL";
       return React.createElement("div",{key:"insignia",style:{textAlign:"center",marginBottom:12}},
-        React.createElement("svg",{width:0,height:0,style:{position:"absolute"}},
-          React.createElement("defs",null,
-            React.createElement("linearGradient",{id:"gradBronce",x1:0,y1:0,x2:0,y2:1},
-              React.createElement("stop",{offset:0,stopColor:"#e2a877"}),
-              React.createElement("stop",{offset:1,stopColor:"#8a5226"})
-            )
-          )
-        ),
-        React.createElement("span",{style:{display:"inline-flex",alignItems:"center",gap:7,background:st.grad,color:"#fff",fontFamily:"'Bebas Neue',sans-serif",fontSize:15,letterSpacing:2,padding:"6px 16px 6px 12px",borderRadius:22,boxShadow:"0 3px 8px rgba(140,80,40,.35)"}},
-          React.createElement(Trofeo,{fill:"#fff",w:15,h:20}),
+        React.createElement("span",{style:{display:"inline-flex",alignItems:"center",gap:esFinal?9:7,background:st.grad,color:st.txt,fontFamily:"'Bebas Neue',sans-serif",fontSize:esFinal?20:15,letterSpacing:esFinal?3:2,padding:esFinal?"9px 22px 9px 16px":"6px 16px 6px 12px",borderRadius:26,boxShadow:"0 3px 10px rgba(0,0,0,.2)"}},
+          React.createElement(Trofeo,{fill:st.tro,w:esFinal?20:15,h:esFinal?27:20}),
           st.label.toUpperCase()
         )
       );
