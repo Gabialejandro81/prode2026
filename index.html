@@ -620,7 +620,8 @@ function Matches(p){
               )
             : React.createElement("div",{style:{display:"flex",alignItems:"center",flexShrink:0}},
                 res
-                  ? React.createElement("span",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:3,color:"var(--txt)"}},res.home+"-"+res.away)
+                  ? React.createElement("span",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:2,color:"var(--txt)",whiteSpace:"nowrap"}},
+                      res.home+(res.penH!==undefined?" ("+res.penH+")":"")+"-"+(res.penA!==undefined?"("+res.penA+") ":"")+res.away)
                   : React.createElement("span",{className:"vs"},"VS")
               ),
           React.createElement("span",{className:"tnr",style:{fontSize:13}},m.away+" "+flag(m.away))
@@ -823,7 +824,13 @@ function Admin(p){
   function saveRes(mid){
     var h=lr[mid+"h"],a=lr[mid+"a"];
     if(h===undefined||h===""||a===undefined||a===""){p.showToast("⚠️ Completá ambos goles");return;}
-    fbSet("results/"+mid,{home:+h,away:+a});
+    var obj={home:+h,away:+a};
+    // Penales (opcional, solo eliminatoria): si se cargaron ambos, se guardan
+    var ph=lr[mid+"ph"],pa=lr[mid+"pa"];
+    if(ph!==undefined&&ph!==""&&pa!==undefined&&pa!==""){
+      obj.penH=+ph;obj.penA=+pa;
+    }
+    fbSet("results/"+mid,obj);
     p.showToast("✅ Resultado guardado");
   }
 
@@ -890,6 +897,8 @@ function Admin(p){
         var ex=p.results[m.id];
         var hv=lr[m.id+"h"]!==undefined?lr[m.id+"h"]:(ex?ex.home:"");
         var av=lr[m.id+"a"]!==undefined?lr[m.id+"a"]:(ex?ex.away:"");
+        var phv=lr[m.id+"ph"]!==undefined?lr[m.id+"ph"]:(ex&&ex.penH!==undefined?ex.penH:"");
+        var pav=lr[m.id+"pa"]!==undefined?lr[m.id+"pa"]:(ex&&ex.penA!==undefined?ex.penA:"");
         return React.createElement("div",{key:m.id,className:"ac"},
           React.createElement("div",{className:"at"},m.home+" vs "+m.away),
           React.createElement("div",{style:{fontSize:10,color:"var(--mut)",marginBottom:8}},m.group+" · "+fmt(m.kickoff)),
@@ -901,6 +910,15 @@ function Admin(p){
             React.createElement("input",{className:"ri",type:"number",placeholder:"—",value:av,
               onChange:function(e){setLr(function(l){return Object.assign({},l,{[m.id+"a"]:e.target.value.replace(/\D/,"").slice(0,2)});});}}),
             React.createElement("span",{style:{flex:1,fontSize:12,fontWeight:600,textAlign:"right"}},m.away+" "+flag(m.away))
+          ),
+          m.ko&&React.createElement("div",{style:{display:"flex",alignItems:"center",gap:7,marginTop:8}},
+            React.createElement("span",{style:{flex:1,fontSize:10,color:"var(--mut)",textTransform:"uppercase",letterSpacing:1}},"Penales (opcional)"),
+            React.createElement("input",{className:"ri",type:"number",placeholder:"-",value:phv,
+              onChange:function(e){setLr(function(l){return Object.assign({},l,{[m.id+"ph"]:e.target.value.replace(/\D/,"").slice(0,2)});});}}),
+            React.createElement("span",{style:{fontFamily:"'Bebas Neue',sans-serif",color:"var(--mut)"}},"—"),
+            React.createElement("input",{className:"ri",type:"number",placeholder:"-",value:pav,
+              onChange:function(e){setLr(function(l){return Object.assign({},l,{[m.id+"pa"]:e.target.value.replace(/\D/,"").slice(0,2)});});}}),
+            React.createElement("span",{style:{flex:1}})
           ),
           React.createElement("button",{className:"cbtn",onClick:function(){saveRes(m.id);}},ex?"Actualizar":"Guardar resultado")
         );
